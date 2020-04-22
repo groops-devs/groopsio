@@ -46,7 +46,7 @@ extern "C" {
 
   static struct PyModuleDef iobase_definition = {
     PyModuleDef_HEAD_INIT, /*m_base*/
-    "iobase",               /*m_name*/
+    "groopsiobase",        /*m_name*/
     NULL,                  /*m_doc*/
     -1,                    /*m_size*/
     iobase_methods,        /*m_methods*/
@@ -56,12 +56,12 @@ extern "C" {
     NULL                   /*m_free*/
   };
 
-  PyMODINIT_FUNC PyInit_iobase()
+  PyMODINIT_FUNC PyInit_groopsiobase()
   {
     PyObject *module = PyModule_Create(&iobase_definition);
     import_array();
 
-    groopsError = PyErr_NewException("iobase.GROOPSError", NULL, NULL);
+    groopsError = PyErr_NewException("groopsiobase.GROOPSError", NULL, NULL);
     Py_INCREF(groopsError);
     PyModule_AddObject(module, "GROOPSError", groopsError);
 

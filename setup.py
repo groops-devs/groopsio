@@ -32,7 +32,7 @@ def configuration(parent_package='', top_path=None):
 
     libraries.append('groopsdeps')
     library_dirs.append('groopsio/lib')
-    config.add_extension('groopsio.iobase',  ["src/groopsio.cpp"], language='c++',
+    config.add_extension('groopsiobase',  ["src/groopsio.cpp"], language='c++',
                         include_dirs=include_dirs, libraries=libraries, library_dirs=library_dirs)
 
     return config
@@ -42,7 +42,7 @@ setup(
     name='groopsio',
     version='0.1',
     author='Andreas Kvas',
-    description='A python package to compute meridional transport from satellite gravimetry',
+    description='A python package to enable I/O for GROOPS files',
     install_requires=['numpy'],
     packages=['groopsio'],
     configuration=configuration

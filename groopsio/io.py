@@ -6,7 +6,7 @@ import numpy as np
 from os.path import isfile, split, isdir
 import warnings
 import datetime as dt
-import groopsio.iobase as giocpp
+import groopsiobase as giocpp
 
 
 def loadmat(fname):
