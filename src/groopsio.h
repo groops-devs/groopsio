@@ -1,14 +1,18 @@
-/***********************************************/
-/**
-* @file groopsio.h
-*
-* @brief Python module for GROOPS I/O.
-*
-* @author Andreas Kvas
-* @date 2014-04-10
-*
-*/
-/***********************************************/
+/*
+ * Python module for GROOPS file I/O.
+ *
+ * Copyright (C) 2020 Andreas Kvas
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
 
 #ifndef __GROOPSIO__
 #define __GROOPSIO__
@@ -26,25 +30,12 @@
 #include "files/fileSatellite.h"
 #include "files/fileArcList.h"
 #include "files/fileNormalEquation.h"
+#include "files/filePolygon.h"
 
 static PyObject *groopsError;
 
-/**
- * @defgroup groopsio GROOPS/Python: Python interface
- *
- * Classes and functions for boost enabled usage of GROOPS classes
- * in Python.
- * @{
- */
-
-/***** FUNCTIONS *******************************/
-
-/** @brief Create 2D Python numeric array of specific size (FORTRAN order).
- *
- * @param rows number of rows
- * @param columns number of columns
- *
- * @return obj pointer to PyObject
+/*
+ * Create 2D Python numeric array of specific size (FORTRAN order).
  */
 PyObject* createDoubleArray(UInt rows, UInt columns)
 {
@@ -57,14 +48,8 @@ PyObject* createDoubleArray(UInt rows, UInt columns)
   return pyObj;
 }
 
-/** @brief GROOPS Matrix to Python Array
- *
- * Copies matrix field into a numeric array.
- * Triangular/Symmetric matrices are stored fully.
- *
- * @param M GROOPS Matrix
- *
- * @return obj pointer to PyObject
+/*
+ * GROOPS Matrix to Python Array
  */
 PyObject* fromMatrix(const Matrix& M)
 {
@@ -79,15 +64,8 @@ PyObject* fromMatrix(const Matrix& M)
   return pyObj;
 }
 
-/** @brief Python Array to GROOPS Matrix
- *
- * Copies numeric array (assumed to be in FORTRAN order) into matrix field.
- *
- * @param pyObj pointer to PyObject
- * @param t Matrix type (GENERAL, SYMMETRIC, TRIANGULAR)
- * @param uplo Matrix triangle (UPPER, LOWER)
- *
- * @return M GROOPS Matrix
+/*
+ * Python Array to GROOPS Matrix
  */
 Matrix fromPyObject(PyObject *pyObj, Matrix::Type t = Matrix::GENERAL,
                     Matrix::Uplo uplo = Matrix::UPPER)
@@ -113,15 +91,8 @@ Matrix fromPyObject(PyObject *pyObj, Matrix::Type t = Matrix::GENERAL,
   return M;
 }
 
-/** @brief Read GROOPS matrix from file
- *
- * Reads contents from a GROOPS matrix file and
- * copies them into a numeric array.
- * Triangular/Symmetric matrices are stored fully.
- *
- * @param fname File name
- *
- * @return v Matrix contents as numeric array
+/*
+ * Read GROOPS matrix from file
  */
 static PyObject* loadmat(PyObject* /*self*/, PyObject *args)
 {
@@ -144,12 +115,8 @@ static PyObject* loadmat(PyObject* /*self*/, PyObject *args)
   }
 }
 
-/** @brief Save numeric array to GROOPS matrix file format
- *
- * @param fname File name
- * @param A numeric array
- * @param t matrix type
- * @param uplo save only upper/lower triangle
+/*
+ * Save numeric array to GROOPS matrix file format
  */
 static PyObject* savemat(PyObject* /*self*/, PyObject *args)
 {
@@ -184,14 +151,8 @@ static PyObject* savemat(PyObject* /*self*/, PyObject *args)
   }
 }
 
-/** @brief Read GROOPS grid from file
- *
- * Reads contents from a GROOPS grid file and
- * copies them into a dictionary of numeric arrays.
- *
- * @param fname File name
- *
- * @return grid Python dictionary
+/*
+ * Read GROOPS grid rectangular from file
  */
 static PyObject* loadgridrectangular(PyObject* /*self*/, PyObject *args)
 {
@@ -233,14 +194,8 @@ static PyObject* loadgridrectangular(PyObject* /*self*/, PyObject *args)
   }
 }
 
-/** @brief Read GROOPS grid from file
- *
- * Reads contents from a GROOPS grid file and
- * copies them into a dictionary of numeric arrays.
- *
- * @param fname File name
- *
- * @return grid Python dictionary
+/*
+ * Read GROOPS grid from file
  */
 static PyObject* loadgrid(PyObject* /*self*/, PyObject *args)
 {
@@ -284,10 +239,8 @@ static PyObject* loadgrid(PyObject* /*self*/, PyObject *args)
   }
 }
 
-/** @brief Save dictionary to GROOPS grid file format
- *
- * @param fname File name
- * @param grid Python dictionary
+/*
+ * Save Python objects to GROOPS grid file format
  */
 static PyObject* savegrid(PyObject* /*self*/, PyObject* args)
 {
@@ -328,10 +281,8 @@ static PyObject* savegrid(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/** @brief Load spherical harmonic coefficients from gfc-file
- *
- * @param fname File name
- * @return gf Python dictionary
+/*
+ * Load spherical harmonic coefficients from gfc-file
  */
 static PyObject* loadgravityfield(PyObject* /*self*/, PyObject* args)
 {
@@ -373,10 +324,8 @@ static PyObject* loadgravityfield(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/** @brief Save Python dictionary to gfc-file
- *
- * @param fname File name
- * @param gf Python dictionary
+/*
+ * Save Python objects to a gfc-file
  */
 static PyObject* savegravityfield(PyObject* /*self*/, PyObject* args)
 {
@@ -424,11 +373,8 @@ static PyObject* savegravityfield(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/** @brief Load spherical harmonic coefficients from TimeSplinesFile
- *
- * @param fname File name
- * @param t point in time to evaluate spline time series
- * @return gf Python dictionary
+/*
+ * Load spherical harmonic coefficients from a TimeSplines file
  */
 static PyObject* loadtimesplines(PyObject* /*self*/, PyObject* args)
 {
@@ -464,11 +410,8 @@ static PyObject* loadtimesplines(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/** @brief Load arcs from instrument files
- *
- * @param fname File name
- *
- * @return tuple Python tuple
+/*
+ * Load arcs from instrument files
  */
 static PyObject* loadinstrument(PyObject* /*self*/, PyObject* args)
 {
@@ -513,11 +456,8 @@ static PyObject* loadinstrument(PyObject* /*self*/, PyObject* args)
   }
 }
 
-  /** @brief Load arcs from instrument files
- *
- * @param fname File name
- *
- * @return tuple Python tuple
+/*
+ * Load arcs from a StarCamera instrument file
  */
 static PyObject* loadstarcamera(PyObject* /*self*/, PyObject* args)
 {
@@ -556,12 +496,8 @@ static PyObject* loadstarcamera(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/** @brief Save a list of numpy arrays as instrument file
- *
- * @param fname File name
- * @param instrument tuple of numeric arrays
- * @param epochType integer representation of @ref Epoch::Type
- *
+/*
+ * Save a list of numpy arrays as instrument file
  */
 static PyObject* saveinstrument(PyObject* /*self*/, PyObject* args)
 {
@@ -596,11 +532,8 @@ static PyObject* saveinstrument(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/** @brief Load a GROOPS arc list
- *
- * @param fname File name
- * @return PyObject* tuple (mjd, arcIntervals)
- *
+/*
+ * Load a GROOPS arc list
  */
 static PyObject* loadarclist(PyObject* /*self*/, PyObject* args)
 {
@@ -638,11 +571,8 @@ static PyObject* loadarclist(PyObject* /*self*/, PyObject* args)
   }
 }
 
-  /** @brief Load GROOPS normal equation info
- *
- * @param fname File name
- * @return PyObject* tuple (b, a)
- *
+/*
+ * Load GROOPS normal equation info
  */
 static PyObject* loadnormalsinfo(PyObject* /*self*/, PyObject* args)
 {
@@ -680,11 +610,8 @@ static PyObject* loadnormalsinfo(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/** @brief Load GROOPS normal equation
- *
- * @param fname File name
- * @return PyObject* tuple (b, a)
- *
+/*
+ * Load GROOPS normal equation
  */
 static PyObject* loadnormals(PyObject* /*self*/, PyObject* args)
 {
@@ -713,10 +640,8 @@ static PyObject* loadnormals(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/** @brief Save matrix and metadata to GROOPS normals file format
- *
- * @param fname File name
- * @param grid Python dictionary
+/*
+ * Save matrix and metadata to GROOPS normals file format
  */
 static PyObject* savenormals(PyObject* /*self*/, PyObject* args)
 {
@@ -750,6 +675,37 @@ static PyObject* savenormals(PyObject* /*self*/, PyObject* args)
     return NULL;
   }
 }
-// @} group groopsio
+
+/*
+ * Read a GROOPS polygon list from file.
+ */
+static PyObject* loadpolygon(PyObject* /*self*/, PyObject* args)
+{
+  try
+  {
+    const char *s;
+    if(!PyArg_ParseTuple(args, "s", &s))
+      throw(Exception("Unable to parse arguments."));
+
+    std::vector<Polygon> poly;
+    readFilePolygon(FileName(std::string(s)), poly);
+
+    PyObject* polygons = PyTuple_New(poly.size());
+    for(UInt k = 0; k < poly.size(); k++)
+    {
+      Matrix data(poly.at(k).L.size(), 2);
+      copy(poly.at(k).L, data.column(0));
+      copy(poly.at(k).B, data.column(1));
+      PyTuple_SetItem(polygons, k, fromMatrix(data));
+    }
+
+    return polygons;
+  }
+  catch(std::exception& e)
+  {
+    PyErr_SetString(groopsError, e.what());
+    return NULL;
+  }
+}
 
 #endif

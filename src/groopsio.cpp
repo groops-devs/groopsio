@@ -1,22 +1,24 @@
-/***********************************************/
-/**
-* @file groopsio.cpp
-*
-* @brief Ppython module for GROOPS I/O.
-*
-* @author Andreas Kvas
-* @date 2014-04-10
-*
-*/
-/***********************************************/
+/*
+ * Python module for GROOPS file I/O.
+ *
+ * Copyright (C) 2020 Andreas Kvas
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
 
 #include "groopsio.h"
 
-/**
- * @brief Ppython module for GROOPS I/O.
- */
 extern "C" {
 
+  /* Exposed functions */
   static PyMethodDef iobase_methods[] = {
     {"loadmat", (PyCFunction)loadmat, METH_VARARGS, ""},
     {"savemat", (PyCFunction)savemat, METH_VARARGS, ""},
@@ -41,9 +43,12 @@ extern "C" {
     {"loadnormals", (PyCFunction)loadnormals, METH_VARARGS, ""},
     {"savenormals", (PyCFunction)savenormals, METH_VARARGS, ""},
 
+    {"loadpolygon", (PyCFunction)loadpolygon, METH_VARARGS, ""},
+
     {NULL, NULL, 0, NULL}
   };
 
+  /* Module definition */
   static struct PyModuleDef iobase_definition = {
     PyModuleDef_HEAD_INIT, /*m_base*/
     "groopsiobase",        /*m_name*/
@@ -56,6 +61,7 @@ extern "C" {
     NULL                   /*m_free*/
   };
 
+  /* Initialization function for the module */
   PyMODINIT_FUNC PyInit_groopsiobase()
   {
     PyObject *module = PyModule_Create(&iobase_definition);
