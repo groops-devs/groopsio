@@ -729,4 +729,35 @@ static PyObject* loadpolygon(PyObject* /*self*/, PyObject* args)
   }
 }
 
+/*
+ * Read a GROOPS polygon list from file.
+ */
+static PyObject* loadparameternames(PyObject* /*self*/, PyObject* args)
+{
+  try
+  {
+    const char *s;
+    if(!PyArg_ParseTuple(args, "s", &s))
+      throw(Exception("Unable to parse arguments."));
+
+    std::vector<ParameterName> parameterNames;
+    readFileParameterName(FileName(std::string(s)), parameterNames);
+
+    PyObject* parameterNameTuple = PyTuple_New(parameterNames.size());
+    for(UInt k = 0; k < parameterNames.size(); k++)
+    {
+      PyObject *str;
+      str = PyString_FromStringAndSize(parameterNames.at(k).str().c_str(), parameterNames.at(k).str().size());
+      PyTuple_SetItem(parameterNameTuple, k, str);
+    }
+
+    return parameterNameTuple;
+  }
+  catch(std::exception& e)
+  {
+    PyErr_SetString(groopsError, e.what());
+    return NULL;
+  }
+}
+
 #endif

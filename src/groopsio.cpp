@@ -41,6 +41,7 @@ extern "C" {
 
     {"loadnormalsinfo", (PyCFunction)loadnormalsinfo, METH_VARARGS, ""},
     {"loadnormals", (PyCFunction)loadnormals, METH_VARARGS, ""},
+    {"loadparameternames", (PyCFunction)loadparameternames, METH_VARARGS, ""},
     {"savenormals", (PyCFunction)savenormals, METH_VARARGS, ""},
 
     {"loadpolygon", (PyCFunction)loadpolygon, METH_VARARGS, ""},

@@ -704,3 +704,32 @@ def loadpolygon(fname):
         raise FileNotFoundError('File ' + fname + ' does not exist.')
 
     return giocpp.loadpolygon(fname)
+
+
+def loadparameternames(fname, encoding='utf-8', errors='strict'):
+    """
+    Read a parameter name list from file.
+
+    Parameters
+    ----------
+    fname : str
+        file name
+    encoding : str
+        encoding used to decode the bytes (see bytes.decode)
+    error : str
+        error level for decoding (see bytes.decode)
+
+    Returns
+    -------
+    parameter_names : tuple of str
+        tuple of strings
+
+    Raises
+    ------
+    FileNotFoundError
+        if file does not exist
+    """
+    if not isfile(fname):
+        raise FileNotFoundError('File ' + fname + ' does not exist.')
+
+    return tuple(name.decode(encoding, errors) for name in giocpp.loadparameternames(fname))
