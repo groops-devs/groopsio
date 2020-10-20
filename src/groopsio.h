@@ -23,14 +23,35 @@
 #include "numpy/ndarraytypes.h"
 #include "numpy/npy_3kcompat.h"
 
-#include "files/fileMatrix.h"
-#include "files/fileGriddedData.h"
-#include "files/fileSphericalHarmonics.h"
-#include "files/fileTimeSplinesGravityfield.h"
-#include "files/fileSatellite.h"
+#include "base/matrix.h"
+#include "inputOutput/file.h"
+
+#include "files/fileAdmittance.h"
 #include "files/fileArcList.h"
+#include "files/fileDoodsonEarthOrientationParameter.h"
+#include "files/fileDoodsonHarmonic.h"
+#include "files/fileEarthOrientationParameter.h"
+#include "files/fileEarthTide.h"
+#include "files/fileEphemerides.h"
+#include "files/fileGnssAntennaDefinition.h"
+#include "files/fileGnssReceiverDefinition.h"
+#include "files/fileGnssSignalBias.h"
+#include "files/fileGnssStationInfo.h"
+#include "files/fileGriddedData.h"
+#include "files/fileGriddedDataTimeSeries.h"
+#include "files/fileInstrument.h"
+#include "files/fileMatrix.h"
+#include "files/fileMeanPolarMotion.h"
 #include "files/fileNormalEquation.h"
+#include "files/fileOceanPoleTide.h"
+#include "files/fileParameterName.h"
 #include "files/filePolygon.h"
+#include "files/fileSatelliteModel.h"
+#include "files/fileSphericalHarmonics.h"
+#include "files/fileStringTable.h"
+#include "files/fileTideGeneratingPotential.h"
+#include "files/fileTimeSplinesGravityfield.h"
+#include "files/fileVariationalEquation.h"
 
 static PyObject *groopsError;
 
@@ -386,7 +407,7 @@ static PyObject* loadtimesplines(PyObject* /*self*/, PyObject* args)
       throw(Exception("Unable to parse arguments."));
     std::string fname(s);
 
-    TimeSplinesGravityfieldFile timeSplinesFile;
+    InFileTimeSplinesGravityfield timeSplinesFile;
     timeSplinesFile.open(FileName(fname));
 
     Time t = mjd2time(mjd);
