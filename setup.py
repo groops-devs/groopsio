@@ -1,7 +1,7 @@
 import setuptools
 from numpy.distutils.misc_util import Configuration
 from numpy.distutils.core import setup
-from numpy.distutils.system_info import get_info
+import numpy as np
 import os
 
 
@@ -13,12 +13,7 @@ def configuration(parent_package='', top_path=None):
 
     include_dirs = [groops_dir]
     library_dirs = []
-    libraries = ['expat', 'z', 'gfortran']
-
-    lapack_opts = get_info('lapack_opt', 0)
-    include_dirs.extend(lapack_opts['include_dirs'])
-    library_dirs.extend(lapack_opts['library_dirs'])
-    libraries.extend(lapack_opts['libraries'])
+    libraries = ['expat', 'z', 'gfortran', 'stdc++fs']
 
     source_files = []
     with open('sources.list', 'r') as f:
@@ -26,9 +21,37 @@ def configuration(parent_package='', top_path=None):
             if len(line) > 0 and not line.startswith('#'):
                 source_files.append(os.path.join(groops_dir, line.strip()))
 
+    lapack_opts = np.__config__.lapack_opt_info
+    try:
+        include_dirs.extend(lapack_opts['include_dirs'])
+    except KeyError:
+        pass
+    try:
+        library_dirs.extend(lapack_opts['library_dirs'])
+    except KeyError:
+        pass
+    try:
+        libraries.extend(lapack_opts['libraries'])
+    except KeyError:
+        pass
+    blas_opts = np.__config__.blas_opt_info
+    try:
+        include_dirs.extend(blas_opts['include_dirs'])
+    except KeyError:
+        pass
+    try:
+        library_dirs.extend(blas_opts['library_dirs'])
+    except KeyError:
+        pass
+    try:
+        libraries.extend(blas_opts['libraries'])
+    except KeyError:
+        pass
+
     config = Configuration()
     config.add_installed_library('groopsdeps', source_files, 'groopsio/lib',
-                                 build_info={'include_dirs': include_dirs, 'libraries': libraries, 'library_dirs': library_dirs})
+                                 build_info={'include_dirs': include_dirs, 'libraries': libraries,
+                                 'library_dirs': library_dirs})
 
     libraries.append('groopsdeps')
     library_dirs.append('groopsio/lib')
@@ -43,7 +66,6 @@ setup(
     version='0.1',
     author='Andreas Kvas',
     description='A python package to enable I/O for GROOPS files',
-    install_requires=['numpy'],
     packages=['groopsio'],
     configuration=configuration
 )
