@@ -335,7 +335,7 @@ def saveinstrument(fname, arcs, epoch_type=None):
     if type(arcs) is not list:
         arcs = [arcs]
 
-    epoch_type = -1 if epoch_type is None else epoch_type
+    epoch_type = arcs[0].shape[1]-1 if epoch_type is None else epoch_type
 
     giocpp.saveinstrument(fname, [arc for arc in arcs], epoch_type)
 
@@ -679,6 +679,7 @@ def savefilter(fname, b, a=np.ones(1), start_index=0):
     A[start_index:start_index + a.size, 2] = a
 
     giocpp.savemat(fname, A, 0, 0)
+
 
 def loadpolygon(fname):
     """
