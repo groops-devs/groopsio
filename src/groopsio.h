@@ -415,6 +415,7 @@ static PyObject* loadtimesplines(PyObject* /*self*/, PyObject* args)
     timeSplinesFile.close();
 
     Matrix anm = coeffs.cnm();
+    anm.setType(Matrix::GENERAL);
     axpy(1.0, coeffs.snm().slice(1, 1, coeffs.maxDegree(), coeffs.maxDegree()).trans(), anm.slice(0, 1, coeffs.maxDegree(), coeffs.maxDegree()));
 
     PyObject *return_tuple = PyTuple_New(3);
