@@ -24,3 +24,4 @@ io:
 
 from . import io
 from .io import *
+from groopsiobase import GROOPSError
