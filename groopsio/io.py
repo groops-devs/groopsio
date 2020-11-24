@@ -16,7 +16,7 @@ Python wrappers for GROOPS file in-/output.
 """
 
 import numpy as np
-from os.path import isfile, split, isdir
+from os.path import isfile, split, isdir, splitext
 import warnings
 import datetime as dt
 import groopsiobase as giocpp
@@ -88,7 +88,7 @@ def savemat(fname, M, mtype='general', uplo='upper'):
     >>>
     >>> gio.savemat('A.dat', A) # A is saved as general 10x10 matrix
     >>> gio.savemat('A.dat', A, mtype='symmetric') # A is saved as symmetric 10x10 matrix
-    >>> gio.savemat('A.dat', A, mtype='triangular', uplo='lower') # A is saved as lwoer triangular 10x10 matrix
+    >>> gio.savemat('A.dat', A, mtype='triangular', uplo='lower') # A is saved as lower triangular 10x10 matrix
 
     """
     if M.ndim == 0:
@@ -454,7 +454,7 @@ def loadnormalsinfo(fname, return_full_info=False):
     Parameters
     ----------
     fname : str
-        file name
+        file name of normal equations
     return_full_info : bool
         if true, return lPl, observation count, parameter names, block index and used blocks, else (default)
         return only lPl, observation count and parameter names
@@ -472,7 +472,15 @@ def loadnormalsinfo(fname, return_full_info=False):
     used_blocks : array_like(block_count, block_count)
         boolean array representing the sparsity structure of the normal equations. Only returned if return_full_info
         is true.
+
+    Raises
+    ------
+    FileNotFoundError
+        if file is nonexistent
     """
+    if not isfile(splitext(fname)[0] + '.info.xml'):
+        raise FileNotFoundError('File ' + splitext(fname)[0] +'.info.xml' + ' does not exist.')
+
     lPl, obs_count, names, block_index, used_blocks = giocpp.loadnormalsinfo(fname)
 
     if return_full_info:
@@ -500,7 +508,15 @@ def loadnormals(fname):
         square sum of observations for each right hand side
     obs_count : int
         observation count
+
+    Raises
+    ------
+    FileNotFoundError
+        if file is nonexistent
     """
+    if not isfile(splitext(fname)[0] + '.info.xml'):
+        raise FileNotFoundError('File ' + splitext(fname)[0] +'.info.xml' + ' does not exist.')
+
     return giocpp.loadnormals(fname)
 
 
