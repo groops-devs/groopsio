@@ -25,6 +25,7 @@
 
 #include "base/matrix.h"
 #include "inputOutput/file.h"
+#include "parallel/parallel.h"
 
 #include "files/fileAdmittance.h"
 #include "files/fileArcList.h"
