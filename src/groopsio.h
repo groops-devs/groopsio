@@ -480,6 +480,112 @@ static PyObject* loadinstrument(PyObject* /*self*/, PyObject* args)
 }
 
 /*
+ * Load GNSSRec instrumentfile
+ */
+static PyObject* loadInstrumentGNSSRec(PyObject *, PyObject* args)
+{
+    try
+    {
+      const char *s;
+      if(!PyArg_ParseTuple(args, "s", &s))
+        throw(Exception("Unable to parse arguments"));
+      std::string fname(s);
+      InstrumentFile file_receiver(fname);
+
+      PyObject* return_tuple = PyTuple_New(file_receiver.arcCount());
+      std::string epoch_str = "epoch";
+      std::string nan_str = "nan";
+      for(UInt arcNo = 0; arcNo < file_receiver.arcCount(); arcNo++)
+      {
+        GnssReceiverArc arc = file_receiver.readArc(arcNo);
+        PyObject *arc_dict = PyDict_New();
+        if(!arc_dict)
+          throw std::runtime_error("loadInstrumentGNSSRec::Could not create PyDict");
+
+        MiscValuesArc arc_new;
+        UInt epochs = arc.size();
+        UInt current_epoch = 0;
+        npy_intp dims[0];
+        dims[0] = epochs;
+        PyObject *times =  PyArray_ZEROS(1, dims, NPY_DOUBLE, 1);
+        PyDict_SetItemString(arc_dict, epoch_str.c_str() , times);
+
+
+        if(!times)
+          throw std::runtime_error("loadInstrumentGNSSRec:: Arc: " +
+                                    std::to_string(arcNo) + " could not create time-list");
+
+        for(auto& epoch : arc)
+        {
+          Double mjd = epoch.time.mjd();
+          PyArrayObject *m = (PyArrayObject*)PyDict_GetItemString(arc_dict, epoch_str.c_str());
+          *(static_cast<Double*>(PyArray_GETPTR1(m, current_epoch))) = mjd;
+
+          UInt idObs = 0;
+          for(GnssType typeSat : epoch.satellite)
+          {
+            UInt prn = typeSat.prn();
+            std::string sys = "";
+
+            if(typeSat == GnssType::GPS)     sys = "G";
+            else if(typeSat == GnssType::GLONASS) sys = "R";
+            else if(typeSat == GnssType::GALILEO) sys = "E";
+            else if(typeSat == GnssType::BDS)     sys = "C";
+            else if(typeSat == GnssType::SBAS)    sys = "S";
+            else if(typeSat == GnssType::QZSS)    sys = "J";
+            else if(typeSat == GnssType::IRNSS)   sys = "I";
+            auto prn_str = std::to_string(prn);
+            sys += std::string(2-prn_str.size(), '0').append(prn_str);
+            // first type for the satellite system
+            UInt idType = std::distance(epoch.obsType.begin(), std::find(epoch.obsType.begin(), epoch.obsType.end(), typeSat));
+
+            // This is used incase several types have the same name
+            std::vector<std::string> used_types;
+            while((idType<epoch.obsType.size())
+            && (idObs<epoch.observation.size())
+            && (epoch.obsType.at(idType) == typeSat))
+            {
+              std::string str_type = epoch.obsType.at(idType++).str();
+              str_type.replace(3,3,sys);
+              Double value = epoch.observation.at(idObs++);
+
+              // TODO fix this incase of several same named obs names as in residuals file
+              if(std::find(used_types.begin(), used_types.end(), str_type) != used_types.end())
+              {
+                continue;
+              }
+              used_types.push_back(str_type);
+              if (!PyDict_GetItemString(arc_dict, str_type.c_str()))
+              {
+                PyObject* vals = PyArray_ZEROS(1, dims, NPY_DOUBLE, 1);
+                PyDict_SetItemString(arc_dict, str_type.c_str() ,vals);
+                PyArrayObject *val_ar_temp = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
+
+                // TODO make this faster and not by looping....
+                for(int i = 0 ; i < epochs; ++i)
+                {
+                  *(static_cast<Double*>(PyArray_GETPTR1(val_ar_temp, i)))  = NAN_EXPR;
+                }
+              }
+              PyArrayObject *val_ar = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
+              *(static_cast<Double*>(PyArray_GETPTR1(val_ar, current_epoch))) = value;
+            }
+          }
+          current_epoch++;
+        }
+        PyTuple_SetItem(return_tuple, arcNo, arc_dict);
+        return return_tuple;
+
+      }
+    }
+    catch(std::exception& e)
+    {
+      PyErr_SetString(groopsError, e.what());
+      return NULL;
+    }
+}
+
+/*
  * Load arcs from a StarCamera instrument file
  */
 static PyObject* loadstarcamera(PyObject* /*self*/, PyObject* args)

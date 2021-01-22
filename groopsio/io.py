@@ -274,6 +274,15 @@ def loadinstrument(fname, concat_arcs=False):
     return arcs, epoch_type
 
 
+def loadInstrumentGNSSRec(fname):
+    if not isfile(fname):
+        raise FileNotFoundError("File {} does not exist.".format(fname))
+    arcs = giocpp.loadInstrumentGNSSRec(fname)
+
+
+    return arcs
+
+
 def loadstarcamera(fname):
     """
     Read rotation matrices from StarCameraFile.
