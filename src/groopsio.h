@@ -549,11 +549,12 @@ static PyObject* loadInstrumentGNSSRec(PyObject *, PyObject* args)
               str_type.replace(3,3,sys);
               Double value = epoch.observation.at(idObs++);
 
-              // TODO fix this incase of several same named obs names as in residuals file
-              if(std::find(used_types.begin(), used_types.end(), str_type) != used_types.end())
+              // TODO this is kinda an ugly fix for same named observations. Just add x in the back incase it was already used
+              while(std::find(used_types.begin(), used_types.end(), str_type) != used_types.end())
               {
-                continue;
+                str_type += "x";
               }
+
               used_types.push_back(str_type);
               if (!PyDict_GetItemString(arc_dict, str_type.c_str()))
               {
@@ -561,7 +562,7 @@ static PyObject* loadInstrumentGNSSRec(PyObject *, PyObject* args)
                 PyDict_SetItemString(arc_dict, str_type.c_str() ,vals);
                 PyArrayObject *val_ar_temp = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
 
-                // TODO make this faster and not by looping....
+                // TODO make this faster by not using a for loop
                 for(int i = 0 ; i < epochs; ++i)
                 {
                   *(static_cast<Double*>(PyArray_GETPTR1(val_ar_temp, i)))  = NAN_EXPR;
