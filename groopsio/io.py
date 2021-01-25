@@ -154,7 +154,8 @@ def loadgridrectangular(fname):
 
     return_tuple = giocpp.loadgridrectangular(fname)
     data_count = len(return_tuple) - 4
-    return list(return_tuple[0:data_count]), return_tuple[-4].flatten(), return_tuple[-3].flatten(), return_tuple[-2], return_tuple[-1]
+    return list(return_tuple[0:data_count]), return_tuple[-4].flatten(), return_tuple[-3].flatten(), return_tuple[-2], \
+           return_tuple[-1]
 
 
 def loadgrid(fname):
@@ -275,7 +276,7 @@ def loadinstrument(fname, concat_arcs=False):
     return arcs, epoch_type
 
 
-def loadInstrumentGNSSRec(fname:str) -> Tuple[Dict[str, np.ndarray]]:
+def loadInstrumentGNSSRec(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     """
     Read the instrument file for GNSSReceivers.
 
@@ -301,6 +302,10 @@ def loadInstrumentGNSSRec(fname:str) -> Tuple[Dict[str, np.ndarray]]:
     if not isfile(fname):
         raise FileNotFoundError("File {} does not exist.".format(fname))
     arcs = giocpp.loadInstrumentGNSSRec(fname)
+    t0 = dt.datetime(1858, 11, 17)
+    for arc in arcs:
+        arc["epoch"] = t0 + arc["epoch"] * dt.timedelta(days=1)
+
     return arcs
 
 
@@ -365,7 +370,7 @@ def saveinstrument(fname, arcs, epoch_type=None):
     if type(arcs) is not list:
         arcs = [arcs]
 
-    epoch_type = arcs[0].shape[1]-1 if epoch_type is None else epoch_type
+    epoch_type = arcs[0].shape[1] - 1 if epoch_type is None else epoch_type
 
     giocpp.saveinstrument(fname, [arc for arc in arcs], epoch_type)
 
@@ -469,8 +474,8 @@ def loadtimesplines(fname, time):
         raise FileNotFoundError('File ' + fname + ' does not exist.')
 
     if isinstance(time, dt.datetime):
-        delta = time-dt.datetime(1858, 11, 17)
-        time = delta.days + delta.seconds/86400.0
+        delta = time - dt.datetime(1858, 11, 17)
+        time = delta.days + delta.seconds / 86400.0
 
     GM, R, anm = giocpp.loadtimesplines(fname, time)
 
@@ -509,7 +514,7 @@ def loadnormalsinfo(fname, return_full_info=False):
         if file is nonexistent
     """
     if not isfile(splitext(fname)[0] + '.info.xml'):
-        raise FileNotFoundError('File ' + splitext(fname)[0] +'.info.xml' + ' does not exist.')
+        raise FileNotFoundError('File ' + splitext(fname)[0] + '.info.xml' + ' does not exist.')
 
     lPl, obs_count, names, block_index, used_blocks = giocpp.loadnormalsinfo(fname)
 
@@ -545,7 +550,7 @@ def loadnormals(fname):
         if file is nonexistent
     """
     if not isfile(splitext(fname)[0] + '.info.xml'):
-        raise FileNotFoundError('File ' + splitext(fname)[0] +'.info.xml' + ' does not exist.')
+        raise FileNotFoundError('File ' + splitext(fname)[0] + '.info.xml' + ' does not exist.')
 
     return giocpp.loadnormals(fname)
 
@@ -580,7 +585,8 @@ def savenormals(fname, N, n, lPl, obs_count):
         raise ValueError('Number of parameters in normal equation coefficient matrix and right hand side do not match.')
 
     if lPl.size != n.shape[1]:
-        raise ValueError('Number of right hand sides in observation square sum and right hand side vector do not match.')
+        raise ValueError(
+            'Number of right hand sides in observation square sum and right hand side vector do not match.')
 
     return giocpp.savenormals(fname, N, n, lPl, obs_count)
 
