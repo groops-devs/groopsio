@@ -482,7 +482,7 @@ static PyObject* loadinstrument(PyObject* /*self*/, PyObject* args)
 /*
  * Load GNSSRec instrumentfile
  */
-static PyObject* loadInstrumentGNSSRec(PyObject *, PyObject* args)
+static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
 {
     try
     {

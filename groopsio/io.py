@@ -276,7 +276,7 @@ def loadinstrument(fname, concat_arcs=False):
     return arcs, epoch_type
 
 
-def loadInstrumentGNSSRec(fname: str) -> Tuple[Dict[str, np.ndarray]]:
+def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     """
     Read the instrument file for GNSSReceivers.
 
@@ -301,7 +301,7 @@ def loadInstrumentGNSSRec(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     """
     if not isfile(fname):
         raise FileNotFoundError("File {} does not exist.".format(fname))
-    arcs = giocpp.loadInstrumentGNSSRec(fname)
+    arcs = giocpp.loadinstrumentgnssreceiver(fname)
     t0 = dt.datetime(1858, 11, 17)
     for arc in arcs:
         arc["epoch"] = t0 + arc["epoch"] * dt.timedelta(days=1)

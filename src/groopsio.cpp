@@ -36,7 +36,7 @@ extern "C" {
 
     {"loadinstrument", (PyCFunction)loadinstrument, METH_VARARGS, ""},
     {"saveinstrument", (PyCFunction)saveinstrument, METH_VARARGS, ""},
-    {"loadInstrumentGNSSRec" ,(PyCFunction)loadInstrumentGNSSRec, METH_VARARGS,""},
+    {"loadinstrumentgnssreceiver" ,(PyCFunction)loadinstrumentgnssreceiver, METH_VARARGS,""},
 
     {"loadstarcamera", (PyCFunction)loadstarcamera, METH_VARARGS, ""},
 
