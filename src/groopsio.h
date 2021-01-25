@@ -480,7 +480,7 @@ static PyObject* loadinstrument(PyObject* /*self*/, PyObject* args)
 }
 
 /*
- * Load GNSSRec instrumentfile
+ * Load arcs from GnssReceiver instrument file
  */
 static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
 {
@@ -494,14 +494,13 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
 
       PyObject* return_tuple = PyTuple_New(file_receiver.arcCount());
       std::string epoch_str = "epochs";
-      std::string nan_str = "nan";
       const std::vector<std::string> repetiton_obs_name_additions = {"_redundancy","_sigmaFactor"};
       for(UInt arcNo = 0; arcNo < file_receiver.arcCount(); arcNo++)
       {
         GnssReceiverArc arc = file_receiver.readArc(arcNo);
         PyObject *arc_dict = PyDict_New();
         if(!arc_dict)
-          throw std::runtime_error("loadInstrumentGNSSRec::Could not create PyDict");
+          throw std::runtime_error("loadinstrumentgnssreceiver: Could not create PyDict");
 
         MiscValuesArc arc_new;
         UInt epochs = arc.size();
@@ -511,10 +510,9 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
         PyObject *times =  PyArray_ZEROS(1, dims, NPY_DOUBLE, 1);
         PyDict_SetItemString(arc_dict, epoch_str.c_str() , times);
 
-
         if(!times)
-          throw std::runtime_error("loadInstrumentGNSSRec:: Arc: " +
-                                    std::to_string(arcNo) + " could not create time-list");
+          throw std::runtime_error("loadinstrumentgnssreceiver::Arc: " +
+                                    std::to_string(arcNo) + " Could not create list of epochs");
 
         for(auto& epoch : arc)
         {
@@ -544,7 +542,8 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
                 if(repetition < repetiton_obs_name_additions.size())
                 {
                   str_type = str_type_tmp + repetiton_obs_name_additions.at(repetition);
-                }else
+                }
+                else
                 {
                   str_type += "x";
                 }

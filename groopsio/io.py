@@ -278,7 +278,7 @@ def loadinstrument(fname, concat_arcs=False):
 
 def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     """
-    Read the instrument file for GNSSReceivers.
+    Read GROOPS GnssReceiver (observation or residual) instrument file format.
 
     Parameters
     ----------
@@ -287,17 +287,27 @@ def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
 
     Returns
     -------
-        A Dict off arrays. The keys are the combined Observation Key + SatelliteKey and an additional
-        key for the epochs.
-        Keys: epoch , <RNXOBSConvention><RNXSatConvention> e.g. L1CG10
-        In case the file consists of same named observations for one epoch the later observation will have a x appended
-        to the Key. E.g. the Residuals file has C1CG** 3 times declared within the file. The respective keys
-        are C1CG**, C1CG**x, C1CG**xx.
+        A dict of numpy arrays. The keys are the combined GROOPS GnssTypes (observation type + satellite type)
+        and an additional key for the epochs.
+        Keys: epochs , <RINEX signal name><RINEX satellite PRN><(GLONASS) encoded frequency number>, e.g. L1CG10, C1PR09F
+        In case of residual files, redundancy and sigma/sigma0 factor for each observation type are added to the dict
+        as additional keys '<key>_redundancy' and '<key>_sigmaFactor'. Azimuth and elevation of the residuals are encoded
+        as separate 'A1*', 'E1*' (at receiver) and 'A2*', 'E2*' (at transmitter) keys.
+        In case multiple entries for one signal exist in one epoch, x characters are appended to the keys of
+        the additional observations (e.g. C1CE01, C1CE01x, C1CE01xx, ...).
 
     Raises
     ------
     FileNotFoundError
         if file is nonexistent
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import groopsio.io as gio
+    >>> arcs = gio.loadinstrumentgnssreceiver('gnss/gnssReceiver.graz.dat')
+    >>> epochs = arcs[0]['epochs']
+    >>> obs = arcs[0]['C1CG04']
     """
     if not isfile(fname):
         raise FileNotFoundError("File {} does not exist.".format(fname))
