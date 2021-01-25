@@ -493,7 +493,7 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
       InstrumentFile file_receiver(fname);
 
       PyObject* return_tuple = PyTuple_New(file_receiver.arcCount());
-      std::string epoch_str = "epoch";
+      std::string epoch_str = "epochs";
       std::string nan_str = "nan";
       const std::vector<std::string> repetiton_obs_name_additions = {"_redundancy","_sigmaFactor"};
       for(UInt arcNo = 0; arcNo < file_receiver.arcCount(); arcNo++)
