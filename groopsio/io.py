@@ -313,16 +313,27 @@ def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     if not isfile(fname):
         raise FileNotFoundError("File {} does not exist.".format(fname))
     arcs = giocpp.loadinstrumentgnssreceiver(fname)
+    additional_obs = ["_redundancy", "_sigmaFactor"]
     t0 = dt.datetime(1858, 11, 17)
     for arc in arcs:
         arc["epochs"] = t0 + arc["epochs"] * dt.timedelta(days=1)
-
+        to_delete = []
         # Remove 0 values in observations
         for obs_name, values in arc.items():
             # This means its a redundancy or sigmafactor
-            if obs_name.find("redund") != -1 or obs_name.find("sigmaFac") != -1 or obs_name[0] == "D" or obs_name[0:3].find("*") != -1:
+            if obs_name.find("redund") != -1 or obs_name.find("sigmaFac") != -1 or obs_name[0] == "D" or obs_name[0:3].find("*") != -1 or obs_name == "epochs":
                 continue
             arc[obs_name][arc[obs_name] == 0] = np.nan
+            if all(np.isnan(arc[obs_name])):
+                to_delete.append(obs_name)
+
+        for obs_name in to_delete:
+            try:
+                del arc[obs_name]
+                for res_obs in additional_obs:
+                    del arc[("{}{}".format(obs_name, res_obs))]
+            except KeyError:
+                pass
 
     return arcs
 
