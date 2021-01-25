@@ -278,26 +278,26 @@ def loadinstrument(fname, concat_arcs=False):
 
 def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     """
-    Read the instrument file for GNSSReceivers.
+    Read GROOPS GNSS Receiver Instrument file format.
+
+    Instrument data is returned as saved in the file, time stamps are given in DateTime
 
     Parameters
     ----------
-        fname:str
-            file name to be read
+    fname : str
+        file name
 
     Returns
     -------
-        A Dict off arrays. The keys are the combined Observation Key + SatelliteKey and an additional
-        key for the epochs.
-        Keys: epoch , <RNXOBSConvention><RNXSatConvention> e.g. L1CG10
-        In case the file consists of same named observations for one epoch the later observation will have a x appended
-        to the Key. E.g. the Residuals file has C1CG** 3 times declared within the file. The respective keys
-        are C1CG**, C1CG**x, C1CG**xx.
+    arcs : Tuple of dictionarys for the observations. Key is Observationname + SatelliteSystem + PRN
+        e.g. C1CG10, L1CG10
+
 
     Raises
     ------
     FileNotFoundError
         if file is nonexistent
+
     """
     if not isfile(fname):
         raise FileNotFoundError("File {} does not exist.".format(fname))
@@ -305,6 +305,13 @@ def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     t0 = dt.datetime(1858, 11, 17)
     for arc in arcs:
         arc["epochs"] = t0 + arc["epochs"] * dt.timedelta(days=1)
+
+        # Remove 0 values in observations
+        for obs_name, values in arc.items():
+            # This means its a redundancy or sigmafactor
+            if obs_name.find("redund") != -1 or obs_name.find("sigmaFac") != -1 or obs_name[0] == "D" or obs_name[0:3].find("*") != -1:
+                continue
+            arc[obs_name][arc[obs_name] == 0] = np.nan
 
     return arcs
 
