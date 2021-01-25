@@ -17,7 +17,7 @@ Python wrappers for GROOPS file in-/output.
 
 import numpy as np
 from os.path import isfile, split, isdir, splitext
-from typing import Dict
+from typing import Dict, Tuple
 import warnings
 import datetime as dt
 import groopsiobase as giocpp
@@ -275,20 +275,28 @@ def loadinstrument(fname, concat_arcs=False):
     return arcs, epoch_type
 
 
-def loadInstrumentGNSSRec(fname:str) -> Dict[str, np.ndarray]:
+def loadInstrumentGNSSRec(fname:str) -> Tuple[Dict[str, np.ndarray]]:
     """
     Read the instrument file for GNSSReceivers.
 
-    Args:
-        fname: file name to be read
+    Parameters
+    ----------
+        fname:str
+            file name to be read
 
-    Returns:
+    Returns
+    -------
         A Dict off arrays. The keys are the combined Observation Key + SatelliteKey and an additional
         key for the epochs.
         Keys: epoch , <RNXOBSConvention><RNXSatConvention> e.g. L1CG10
         In case the file consists of same named observations for one epoch the later observation will have a x appended
         to the Key. E.g. the Residuals file has C1CG** 3 times declared within the file. The respective keys
         are C1CG**, C1CG**x, C1CG**xx.
+
+    Raises
+    ------
+    FileNotFoundError
+        if file is nonexistent
     """
     if not isfile(fname):
         raise FileNotFoundError("File {} does not exist.".format(fname))
