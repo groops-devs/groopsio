@@ -278,9 +278,7 @@ def loadinstrument(fname, concat_arcs=False):
 
 def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     """
-    Read GROOPS GNSS Receiver Instrument file format.
-
-    Instrument data is returned as saved in the file, time stamps are given in DateTime
+    Read GROOPS GnssReceiver (observation or residual) instrument file format.
 
     Parameters
     ----------
@@ -289,15 +287,28 @@ def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
 
     Returns
     -------
-    arcs : Tuple of dictionarys for the observations. Key is Observationname + SatelliteSystem + PRN
-        e.g. C1CG10, L1CG10
-
+        A dict of numpy arrays. The keys are the combined GROOPS GnssTypes (observation type + satellite type)
+        and an additional key for the epochs.
+        Keys: epochs , <RINEX signal name><RINEX satellite PRN><(GLONASS) encoded frequency number>, e.g. L1CG10, C1PR09F
+        In case of residual files, redundancy and sigma/sigma0 factor for each observation type are added to the dict
+        as additional keys '<key>_redundancy' and '<key>_sigmaFactor'. Azimuth and elevation of the residuals are encoded
+        as separate 'A1*', 'E1*' (at receiver) and 'A2*', 'E2*' (at transmitter) keys.
+        In case multiple entries for one signal exist in one epoch, x characters are appended to the keys of
+        the additional observations (e.g. C1CE01, C1CE01x, C1CE01xx, ...).
 
     Raises
     ------
     FileNotFoundError
         if file is nonexistent
 
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import groopsio.io as gio
+    >>> arcs = gio.loadinstrumentgnssreceiver('gnss/gnssReceiver.graz.dat')
+    >>> epochs = arcs[0]['epochs']
+    >>> obs = arcs[0]['C1CG04']
     """
     if not isfile(fname):
         raise FileNotFoundError("File {} does not exist.".format(fname))
