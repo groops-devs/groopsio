@@ -304,7 +304,7 @@ def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     arcs = giocpp.loadinstrumentgnssreceiver(fname)
     t0 = dt.datetime(1858, 11, 17)
     for arc in arcs:
-        arc["epoch"] = t0 + arc["epoch"] * dt.timedelta(days=1)
+        arc["epochs"] = t0 + arc["epochs"] * dt.timedelta(days=1)
 
     return arcs
 

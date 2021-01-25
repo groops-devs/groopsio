@@ -525,7 +525,7 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
           UInt idObs = 0;
           for(GnssType typeSat : epoch.satellite)
           {
-            std::string sys = typeSat.prnStr();
+            std::string sys = typeSat.str();
             // first type for the satellite system
             UInt idType = std::distance(epoch.obsType.begin(), std::find(epoch.obsType.begin(), epoch.obsType.end(), typeSat));
             // This is used incase several types have the same name
@@ -534,8 +534,8 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
             && (idObs<epoch.observation.size())
             && (epoch.obsType.at(idType) == typeSat))
             {
-              std::string str_type = epoch.obsType.at(idType++).str();
-              str_type.replace(3,3,sys);
+              std::string str_type = epoch.obsType.at(idType++).str().substr(0,3);
+              str_type += sys.substr(3);
               std::string str_type_tmp = str_type;
               Double value = epoch.observation.at(idObs++);
               UInt repetition = 0;
