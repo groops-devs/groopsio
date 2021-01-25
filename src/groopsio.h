@@ -495,6 +495,7 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
       PyObject* return_tuple = PyTuple_New(file_receiver.arcCount());
       std::string epoch_str = "epoch";
       std::string nan_str = "nan";
+      const std::vector<std::string> repetiton_obs_name_additions = {"_redundancy","_sigmaFactor"};
       for(UInt arcNo = 0; arcNo < file_receiver.arcCount(); arcNo++)
       {
         GnssReceiverArc arc = file_receiver.readArc(arcNo);
@@ -524,21 +525,9 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
           UInt idObs = 0;
           for(GnssType typeSat : epoch.satellite)
           {
-            UInt prn = typeSat.prn();
-            std::string sys = "";
-
-            if(typeSat == GnssType::GPS)     sys = "G";
-            else if(typeSat == GnssType::GLONASS) sys = "R";
-            else if(typeSat == GnssType::GALILEO) sys = "E";
-            else if(typeSat == GnssType::BDS)     sys = "C";
-            else if(typeSat == GnssType::SBAS)    sys = "S";
-            else if(typeSat == GnssType::QZSS)    sys = "J";
-            else if(typeSat == GnssType::IRNSS)   sys = "I";
-            auto prn_str = std::to_string(prn);
-            sys += std::string(2-prn_str.size(), '0').append(prn_str);
+            std::string sys = typeSat.prnStr();
             // first type for the satellite system
             UInt idType = std::distance(epoch.obsType.begin(), std::find(epoch.obsType.begin(), epoch.obsType.end(), typeSat));
-
             // This is used incase several types have the same name
             std::vector<std::string> used_types;
             while((idType<epoch.obsType.size())
@@ -547,12 +536,19 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
             {
               std::string str_type = epoch.obsType.at(idType++).str();
               str_type.replace(3,3,sys);
+              std::string str_type_tmp = str_type;
               Double value = epoch.observation.at(idObs++);
-
-              // TODO this is kinda an ugly fix for same named observations. Just add x in the back incase it was already used
+              UInt repetition = 0;
               while(std::find(used_types.begin(), used_types.end(), str_type) != used_types.end())
               {
-                str_type += "x";
+                if(repetition < repetiton_obs_name_additions.size())
+                {
+                  str_type = str_type_tmp + repetiton_obs_name_additions.at(repetition);
+                }else
+                {
+                  str_type += "x";
+                }
+                repetition++;
               }
 
               used_types.push_back(str_type);
@@ -563,7 +559,7 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
                 PyArrayObject *val_ar_temp = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
 
                 // TODO make this faster by not using a for loop
-                for(int i = 0 ; i < epochs; ++i)
+                for(UInt i = 0 ; i < epochs; ++i)
                 {
                   *(static_cast<Double*>(PyArray_GETPTR1(val_ar_temp, i)))  = NAN_EXPR;
                 }
