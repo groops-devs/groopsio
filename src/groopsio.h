@@ -480,6 +480,99 @@ static PyObject* loadinstrument(PyObject* /*self*/, PyObject* args)
 }
 
 /*
+ * Load arcs from GnssReceiver instrument file
+ */
+static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
+{
+  try
+  {
+    const char *s;
+    if(!PyArg_ParseTuple(args, "s", &s))
+      throw(Exception("Unable to parse arguments"));
+    std::string fname(s);
+    InstrumentFile file_receiver(fname);
+
+    PyObject* return_tuple = PyTuple_New(file_receiver.arcCount());
+    std::string epoch_str = "epochs";
+    const std::vector<std::string> repetiton_obs_name_additions = {"_redundancy","_sigmaFactor"};
+    for(UInt arcNo = 0; arcNo < file_receiver.arcCount(); arcNo++)
+    {
+      GnssReceiverArc arc = file_receiver.readArc(arcNo);
+      PyObject *arc_dict = PyDict_New();
+      if(!arc_dict)
+        throw(Exception("could not create dictionary"));
+
+      MiscValuesArc arc_new;
+      UInt epochs = arc.size();
+      UInt current_epoch = 0;
+      npy_intp dims[0];
+      dims[0] = epochs;
+      PyObject *times =  PyArray_ZEROS(1, dims, NPY_DOUBLE, 1);
+      if(!times)
+        throw(Exception("could not create array"));
+      PyDict_SetItemString(arc_dict, epoch_str.c_str() , times);
+
+      for(auto& epoch : arc)
+      {
+        Double mjd = epoch.time.mjd();
+        PyArrayObject *m = (PyArrayObject*)PyDict_GetItemString(arc_dict, epoch_str.c_str());
+        *(static_cast<Double*>(PyArray_GETPTR1(m, current_epoch))) = mjd;
+
+        UInt idObs = 0;
+        for(GnssType typeSat : epoch.satellite)
+        {
+          std::string sys = typeSat.str();
+          UInt idType = std::distance(epoch.obsType.begin(), std::find(epoch.obsType.begin(), epoch.obsType.end(), typeSat));
+          std::vector<std::string> used_types;
+          while((idType<epoch.obsType.size()) && (idObs<epoch.observation.size()) && (epoch.obsType.at(idType) == typeSat))
+          {
+            std::string str_type = epoch.obsType.at(idType++).str().substr(0,3);
+            str_type += sys.substr(3);
+            std::string str_type_tmp = str_type;
+            Double value = epoch.observation.at(idObs++);
+            UInt repetition = 0;
+            while(std::find(used_types.begin(), used_types.end(), str_type) != used_types.end())
+            {
+              if(repetition < repetiton_obs_name_additions.size())
+              {
+                str_type = str_type_tmp + repetiton_obs_name_additions.at(repetition);
+              }
+              else
+              {
+                str_type += "x";
+              }
+              repetition++;
+            }
+
+            used_types.push_back(str_type);
+            if (!PyDict_GetItemString(arc_dict, str_type.c_str()))
+            {
+              PyObject* vals = PyArray_ZEROS(1, dims, NPY_DOUBLE, 1);
+              PyDict_SetItemString(arc_dict, str_type.c_str() ,vals);
+              PyArrayObject *val_ar_temp = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
+
+              for(UInt i = 0 ; i < epochs; ++i)
+                *(static_cast<Double*>(PyArray_GETPTR1(val_ar_temp, i)))  = NAN_EXPR;
+            }
+            PyArrayObject *val_ar = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
+            *(static_cast<Double*>(PyArray_GETPTR1(val_ar, current_epoch))) = value;
+          }
+        }
+        current_epoch++;
+      }
+      PyTuple_SetItem(return_tuple, arcNo, arc_dict);
+    }
+
+    return return_tuple;
+  }
+  catch(std::exception& e)
+  {
+    PyErr_SetString(groopsError, e.what());
+    return NULL;
+  }
+}
+
+/*
  * Load arcs from a StarCamera instrument file
  */
 static PyObject* loadstarcamera(PyObject* /*self*/, PyObject* args)

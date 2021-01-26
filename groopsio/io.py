@@ -274,6 +274,64 @@ def loadinstrument(fname, concat_arcs=False):
     return arcs, epoch_type
 
 
+def loadinstrumentgnssreceiver(fname):
+    """
+    Read GROOPS GnssReceiver (observation or residual) instrument file format.
+
+    Parameters
+    ----------
+    fname : str
+        file name
+
+    Returns
+    -------
+    arcs : tuple
+        A tuple of dictionaries. In each tuple entry, the keys are the combined GROOPS GnssTypes (observation type + satellite type)
+        and an additional key for the epochs.
+        Keys: epochs , <RINEX signal name><RINEX satellite PRN><(GLONASS) encoded frequency number>, e.g. L1CG10, C1PR09F
+        In case of residual files, redundancy and sigma/sigma0 factor for each observation type are added to the dict
+        as additional keys '<key>_redundancy' and '<key>_sigmaFactor'. Azimuth and elevation of the residuals are encoded
+        as separate 'A1*', 'E1*' (at receiver) and 'A2*', 'E2*' (at transmitter) keys.
+        In case multiple entries for one signal exist in one epoch, x characters are appended to the keys of
+        the additional observations (e.g. C1CE01, C1CE01x, C1CE01xx, ...).
+
+    Raises
+    ------
+    FileNotFoundError
+        if file is nonexistent
+
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import groopsio.io as gio
+    >>> arcs = gio.loadinstrumentgnssreceiver('gnss/gnssReceiver.graz.dat')
+    >>> epochs = arcs[0]['epochs']
+    >>> obs = arcs[0]['C1CG04']
+    """
+    if not isfile(fname):
+        raise FileNotFoundError("File {} does not exist.".format(fname))
+    arcs = giocpp.loadinstrumentgnssreceiver(fname)
+
+    t0 = dt.datetime(1858, 11, 17)
+    for arc in arcs:
+        is_residual_file = np.any([s.endswith('_redundancy') for s in arc.keys()])
+
+        arc["epochs"] = np.array([t0 + dt.timedelta(days=tk) for tk in arc["epochs"]])
+        to_delete = []
+        # Remove 0 values in observations
+        for obs_name, values in arc.items():
+            if obs_name.endswith("_redundancy") or obs_name.endswith("_sigmaFactor") or obs_name[0] == "D" or '*' in obs_name[0:3] or obs_name == "epochs":
+                continue
+            if np.count_nonzero(values[~np.isnan(values)]) == 0:
+                to_delete.extend([obs_name, obs_name + '_redundancy', obs_name + '_sigmaFactor'] if is_residual_file else [obs_name])
+
+        for obs_name in to_delete:
+            arc.pop(obs_name)
+
+    return arcs
+
+
 def loadstarcamera(fname):
     """
     Read rotation matrices from StarCameraFile.
