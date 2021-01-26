@@ -17,7 +17,6 @@ Python wrappers for GROOPS file in-/output.
 
 import numpy as np
 from os.path import isfile, split, isdir, splitext
-from typing import Dict, Tuple
 import warnings
 import datetime as dt
 import groopsiobase as giocpp
@@ -276,7 +275,7 @@ def loadinstrument(fname, concat_arcs=False):
     return arcs, epoch_type
 
 
-def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
+def loadinstrumentgnssreceiver(fname):
     """
     Read GROOPS GnssReceiver (observation or residual) instrument file format.
 
@@ -287,7 +286,8 @@ def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
 
     Returns
     -------
-        A dict of numpy arrays. The keys are the combined GROOPS GnssTypes (observation type + satellite type)
+    arcs : tuple
+        A tuple of dictionaries. In each tuple entry, the keys are the combined GROOPS GnssTypes (observation type + satellite type)
         and an additional key for the epochs.
         Keys: epochs , <RINEX signal name><RINEX satellite PRN><(GLONASS) encoded frequency number>, e.g. L1CG10, C1PR09F
         In case of residual files, redundancy and sigma/sigma0 factor for each observation type are added to the dict
@@ -313,27 +313,22 @@ def loadinstrumentgnssreceiver(fname: str) -> Tuple[Dict[str, np.ndarray]]:
     if not isfile(fname):
         raise FileNotFoundError("File {} does not exist.".format(fname))
     arcs = giocpp.loadinstrumentgnssreceiver(fname)
-    additional_obs = ["_redundancy", "_sigmaFactor"]
+
     t0 = dt.datetime(1858, 11, 17)
     for arc in arcs:
-        arc["epochs"] = t0 + arc["epochs"] * dt.timedelta(days=1)
+        is_residual_file = np.any([s.endswith('_redundancy') for s in arc.keys()])
+
+        arc["epochs"] = np.array([t0 + dt.timedelta(days=tk) for tk in arc["epochs"]])
         to_delete = []
         # Remove 0 values in observations
         for obs_name, values in arc.items():
-            # This means its a redundancy or sigmafactor
-            if obs_name.find("redund") != -1 or obs_name.find("sigmaFac") != -1 or obs_name[0] == "D" or obs_name[0:3].find("*") != -1 or obs_name == "epochs":
+            if obs_name.endswith("_redundancy") or obs_name.endswith("_sigmaFactor") or obs_name[0] == "D" or '*' in obs_name[0:3] or obs_name == "epochs":
                 continue
-            arc[obs_name][arc[obs_name] == 0] = np.nan
-            if all(np.isnan(arc[obs_name])):
-                to_delete.append(obs_name)
+            if np.count_nonzero(values[~np.isnan(values)]) == 0:
+                to_delete.extend([obs_name, obs_name + '_redundancy', obs_name + '_sigmaFactor'] if is_residual_file else [obs_name])
 
         for obs_name in to_delete:
-            try:
-                del arc[obs_name]
-                for res_obs in additional_obs:
-                    del arc[("{}{}".format(obs_name, res_obs))]
-            except KeyError:
-                pass
+            arc.pop(obs_name)
 
     return arcs
 
