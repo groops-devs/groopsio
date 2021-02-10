@@ -825,7 +825,39 @@ static PyObject* loadpolygon(PyObject* /*self*/, PyObject* args)
 }
 
 /*
- * Read a GROOPS polygon list from file.
+ * Save a GROOPS polygon list to file.
+ */
+static PyObject* savepolygon(PyObject* /*self*/, PyObject* args)
+{
+  try
+  {
+    const char *s;
+    PyObject *list;
+    if(!PyArg_ParseTuple(args, "sO", &s, &list))
+      throw(Exception("Unable to parse arguments."));
+
+    UInt count = PyTuple_Size(list);
+    std::vector<Polygon> poly(count);
+    for(UInt k = 0; k < poly.size(); k++)
+    {
+      Matrix M = fromPyObject(PyTuple_GetItem(list, k));
+      poly.at(k).L = M.column(0);
+      poly.at(k).B = M.column(1);
+    }
+
+    writeFilePolygon(FileName(std::string(s)), poly);
+
+    Py_RETURN_NONE;
+  }
+  catch(std::exception& e)
+  {
+    PyErr_SetString(groopsError, e.what());
+    return NULL;
+  }
+}
+
+/*
+ * Read GROOPS parameter names from file.
  */
 static PyObject* loadparameternames(PyObject* /*self*/, PyObject* args)
 {
