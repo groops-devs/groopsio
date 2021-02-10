@@ -782,7 +782,7 @@ def loadpolygon(fname):
 
 def savepolygon(fname, polygons):
     """
-    Read  a polygon list from file.
+    Save a polygon list to file.
 
     Parameters
     ----------
