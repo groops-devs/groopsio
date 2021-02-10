@@ -86,7 +86,7 @@ def savematrix(file_name, matrix, matrix_type='general', lower=False):
     matrix_type : str
         matrix type {'general', 'symmetric', 'triangular'}, (default: 'general')
     lower : bool
-        chose which triangle is stored, ignored when matrix_type='general' (default: the upper triangle is stored)
+        choose which triangle is stored, ignored when matrix_type='general' (default: the upper triangle is stored)
 
     Raises
     ------
