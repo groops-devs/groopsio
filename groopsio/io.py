@@ -780,6 +780,34 @@ def loadpolygon(fname):
     return giocpp.loadpolygon(fname)
 
 
+def savepolygon(fname, polygons):
+    """
+    Read  a polygon list from file.
+
+    Parameters
+    ----------
+    fname : str
+        file name
+    polygons : array_like(p, 2) or tuple of array_likes(p, 2)
+        tuple of 2-d arrays representing the vertices (longitude, latitude) of each polygon in radians.
+
+    Raises
+    ------
+    FileNotFoundError
+        if directory is not writeable
+    """
+    if split(fname)[0] and not isdir(split(fname)[0]):
+        raise FileNotFoundError('Directory ' + split(fname)[0] + ' does not exist.')
+
+    if type(polygons) is list:
+        polygons = tuple(polygons)
+
+    if type(polygons) is not tuple:
+        polygons = (polygons,)
+
+    return giocpp.savepolygon(fname, polygons)
+
+
 def loadparameternames(fname, encoding='utf-8', errors='strict'):
     """
     Read a parameter name list from file.

@@ -46,6 +46,7 @@ extern "C" {
     {"savenormals", (PyCFunction)savenormals, METH_VARARGS, ""},
 
     {"loadpolygon", (PyCFunction)loadpolygon, METH_VARARGS, ""},
+    {"savepolygon", (PyCFunction)savepolygon, METH_VARARGS, ""},
 
     {NULL, NULL, 0, NULL}
   };
