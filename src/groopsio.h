@@ -116,7 +116,7 @@ Matrix fromPyObject(PyObject *pyObj, Matrix::Type t = Matrix::GENERAL,
 /*
  * Read GROOPS matrix from file
  */
-static PyObject* loadmat(PyObject* /*self*/, PyObject *args)
+static PyObject* loadmatrix(PyObject* /*self*/, PyObject *args)
 {
   try
   {
@@ -140,15 +140,14 @@ static PyObject* loadmat(PyObject* /*self*/, PyObject *args)
 /*
  * Save numeric array to GROOPS matrix file format
  */
-static PyObject* savemat(PyObject* /*self*/, PyObject *args)
+static PyObject* savematrix(PyObject* /*self*/, PyObject *args)
 {
   try
   {
     const char *s;
     const char *type;
-    const char *uplo;
-    PyObject *pyObj;
-    if(!PyArg_ParseTuple(args, "sOss", &s, &pyObj, &type, &uplo))
+    PyObject *pyObj, *isLower;
+    if(!PyArg_ParseTuple(args, "sOsO", &s, &pyObj, &type, &isLower))
       throw(Exception("Unable to parse arguments."));
 
     Matrix::Type type_rep = Matrix::GENERAL;
@@ -157,9 +156,7 @@ static PyObject* savemat(PyObject* /*self*/, PyObject *args)
     else if(std::string(type) == std::string("triangular"))
       type_rep = Matrix::TRIANGULAR;
 
-    Matrix::Uplo uplo_rep = Matrix::UPPER;
-    if(std::string(uplo) == std::string("lower"))
-      uplo_rep = Matrix::LOWER;
+    Matrix::Uplo uplo_rep = PyObject_IsTrue(isLower) ? Matrix::LOWER : Matrix::UPPER;
 
     Matrix M = fromPyObject(pyObj, type_rep, uplo_rep);
     writeFileMatrix(FileName(std::string(s)), M);

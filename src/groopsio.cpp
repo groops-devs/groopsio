@@ -20,8 +20,8 @@ extern "C" {
 
   /* Exposed functions */
   static PyMethodDef iobase_methods[] = {
-    {"loadmat", (PyCFunction)loadmat, METH_VARARGS, ""},
-    {"savemat", (PyCFunction)savemat, METH_VARARGS, ""},
+    {"loadmat", (PyCFunction)loadmatrix, METH_VARARGS, ""},
+    {"savemat", (PyCFunction)savematrix, METH_VARARGS, ""},
 
     {"loadgridrectangular", (PyCFunction)loadgridrectangular, METH_VARARGS, ""},
     {"loadgrid", (PyCFunction)loadgrid, METH_VARARGS, ""},
