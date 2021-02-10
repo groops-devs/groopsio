@@ -23,6 +23,19 @@ import groopsiobase as giocpp
 
 
 def loadmat(file_name):
+    warnings.warn("'loadmat' will be deprecated in favor of 'loadmatrix' in a future release", category=DeprecationWarning)
+    return loadmatrix(file_name)
+
+
+def savemat(file_name, M, mtype='general', uplo='upper'):
+    warnings.warn("'savemat' will be deprecated in favor of 'savematrix' in a future release", category=DeprecationWarning)
+    if uplo.lower() not in ('upper', 'lower'):
+        raise ValueError("Matrix triangle must be 'upper' or 'lower'.")
+
+    savematrix(file_name, M, mtype, uplo.lower() == 'lower')
+
+
+def loadmatrix(file_name):
     """
     Read GROOPS Matrix file format.
 
@@ -56,7 +69,7 @@ def loadmat(file_name):
     return giocpp.loadmat(file_name)
 
 
-def savemat(file_name, M, mtype='general', uplo='upper'):
+def savematrix(file_name, matrix, matrix_type='general', lower=False):
     """
     Write Numpy ndarray to GROOPS Matrix file
 
@@ -68,12 +81,12 @@ def savemat(file_name, M, mtype='general', uplo='upper'):
     ----------
     file_name : str
         file name
-    M : array_like(m, n)
+    matrix : array_like(m, n)
         2d ndarray to be written to file
-    mtype : str
+    matrix_type : str
         matrix type {'general', 'symmetric', 'triangular'}, (default: 'general')
-    uplo : str
-        chose which triangle is stored (only applies if mtype is not 'general') {'upper', 'lower'} (default: 'upper')
+    lower : bool
+        chose which triangle is stored, ignored when matrix_type='general' (default: the upper triangle is stored)
 
     Raises
     ------
@@ -83,35 +96,32 @@ def savemat(file_name, M, mtype='general', uplo='upper'):
     Examples
     --------
     >>> import numpy as np
-    >>> import groopsio.io as gio
+    >>> import groopsio as gio
     >>> A = np.eye(10)  # 10x10 identity matrix
     >>>
-    >>> gio.savemat('A.dat', A) # A is saved as general 10x10 matrix
-    >>> gio.savemat('A.dat', A, mtype='symmetric') # A is saved as symmetric 10x10 matrix
-    >>> gio.savemat('A.dat', A, mtype='triangular', uplo='lower') # A is saved as lower triangular 10x10 matrix
+    >>> gio.savematrix('A.dat', A) # A is saved as general 10x10 matrix
+    >>> gio.savematrix('A.dat', A, matrix_type='symmetric') # A is saved as symmetric 10x10 matrix
+    >>> gio.savematrix('A.dat', A, matrix_type='triangular', lower=True) # A is saved as lower triangular 10x10 matrix
 
     """
-    if M.ndim == 0:
+    if matrix.ndim == 0:
         warnings.warn('0-dimensional array treated as 1x1 matrix.')
-        M = np.atleast_2d(M)
+        M = np.atleast_2d(matrix)
 
-    elif M.ndim == 1:
+    elif matrix.ndim == 1:
         warnings.warn('1-dimensional array treated as column vector.')
-        M = M[:, np.newaxis]
+        matrix = matrix[:, np.newaxis]
 
-    elif M.ndim > 2:
+    elif matrix.ndim > 2:
         raise ValueError('ndarray must have at most two dimensions (has {0:d}).'.format(M.ndim))
 
     if split(file_name)[0] and not isdir(split(file_name)[0]):
         raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
-    if mtype.lower() not in ('general', 'symmetric', 'triangular'):
+    if matrix_type.lower() not in ('general', 'symmetric', 'triangular'):
         raise ValueError("Matrix type must be 'general', 'symmetric' or 'triangular'.")
 
-    if uplo.lower() not in ('upper', 'lower'):
-        raise ValueError("Matrix triangle must be 'upper' or 'lower'.")
-
-    giocpp.savemat(file_name, M, mtype.lower(), uplo.lower())
+    giocpp.savemat(file_name, matrix, matrix_type.lower(), lower)
 
 
 def loadgridrectangular(file_name):
