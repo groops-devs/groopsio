@@ -403,7 +403,7 @@ def saveinstrument(file_name, arcs, epoch_type=None):
     if type(arcs) is not list:
         arcs = [arcs]
 
-    epoch_type = arcs[0].shape[1]-1 if epoch_type is None else epoch_type
+    epoch_type = arcs[0].shape[1] - 1 if epoch_type is None else epoch_type
 
     giocpp.saveinstrument(file_name, [arc for arc in arcs], epoch_type)
 
@@ -507,8 +507,8 @@ def loadtimesplines(file_name, time):
         raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
     if isinstance(time, dt.datetime):
-        delta = time-dt.datetime(1858, 11, 17)
-        time = delta.days + delta.seconds/86400.0
+        delta = time - dt.datetime(1858, 11, 17)
+        time = delta.days + delta.seconds / 86400.0
 
     GM, R, anm = giocpp.loadtimesplines(file_name, time)
 
@@ -547,7 +547,7 @@ def loadnormalsinfo(file_name, return_full_info=False):
         if file is nonexistent
     """
     if not isfile(splitext(file_name)[0] + '.info.xml'):
-        raise FileNotFoundError('File ' + splitext(file_name)[0] +'.info.xml' + ' does not exist.')
+        raise FileNotFoundError('File ' + splitext(file_name)[0] + '.info.xml' + ' does not exist.')
 
     lPl, obs_count, names, block_index, used_blocks = giocpp.loadnormalsinfo(file_name)
 
@@ -583,7 +583,7 @@ def loadnormals(file_name):
         if file is nonexistent
     """
     if not isfile(splitext(file_name)[0] + '.info.xml'):
-        raise FileNotFoundError('File ' + splitext(file_name)[0] +'.info.xml' + ' does not exist.')
+        raise FileNotFoundError('File ' + splitext(file_name)[0] + '.info.xml' + ' does not exist.')
 
     return giocpp.loadnormals(file_name)
 
