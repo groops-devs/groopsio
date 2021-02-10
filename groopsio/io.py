@@ -22,7 +22,7 @@ import datetime as dt
 import groopsiobase as giocpp
 
 
-def loadmat(fname):
+def loadmat(file_name):
     """
     Read GROOPS Matrix file format.
 
@@ -31,7 +31,7 @@ def loadmat(fname):
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -50,13 +50,13 @@ def loadmat(fname):
      >>> A = gio.loadmat('A.dat')
 
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    return giocpp.loadmat(fname)
+    return giocpp.loadmat(file_name)
 
 
-def savemat(fname, M, mtype='general', uplo='upper'):
+def savemat(file_name, M, mtype='general', uplo='upper'):
     """
     Write Numpy ndarray to GROOPS Matrix file
 
@@ -66,7 +66,7 @@ def savemat(fname, M, mtype='general', uplo='upper'):
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     M : array_like(m, n)
         2d ndarray to be written to file
@@ -102,8 +102,8 @@ def savemat(fname, M, mtype='general', uplo='upper'):
     elif M.ndim > 2:
         raise ValueError('ndarray must have at most two dimensions (has {0:d}).'.format(M.ndim))
 
-    if split(fname)[0] and not isdir(split(fname)[0]):
-        raise FileNotFoundError('Directory ' + split(fname)[0] + ' does not exist.')
+    if split(file_name)[0] and not isdir(split(file_name)[0]):
+        raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
     if mtype.lower() not in ('general', 'symmetric', 'triangular'):
         raise ValueError("Matrix type must be 'general', 'symmetric' or 'triangular'.")
@@ -111,16 +111,16 @@ def savemat(fname, M, mtype='general', uplo='upper'):
     if uplo.lower() not in ('upper', 'lower'):
         raise ValueError("Matrix triangle must be 'upper' or 'lower'.")
 
-    giocpp.savemat(fname, M, mtype.lower(), uplo.lower())
+    giocpp.savemat(file_name, M, mtype.lower(), uplo.lower())
 
 
-def loadgridrectangular(fname):
+def loadgridrectangular(file_name):
     """
     Read GROOPS GriddedDataRectangular file format.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -148,21 +148,21 @@ def loadgridrectangular(fname):
     >>> data, a, f = gio.loadgrid('grids/aod1b_RL04.dat')
 
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    return_tuple = giocpp.loadgridrectangular(fname)
+    return_tuple = giocpp.loadgridrectangular(file_name)
     data_count = len(return_tuple) - 4
     return list(return_tuple[0:data_count]), return_tuple[-4].flatten(), return_tuple[-3].flatten(), return_tuple[-2], return_tuple[-1]
 
 
-def loadgrid(fname):
+def loadgrid(file_name):
     """
     Read GROOPS GriddedData file format.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -187,21 +187,21 @@ def loadgrid(fname):
     >>> data, a, f = gio.loadgrid('grids/aod1b_RL04.dat')
 
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    data, a, f = giocpp.loadgrid(fname)
+    data, a, f = giocpp.loadgrid(file_name)
 
     return data, a, f
 
 
-def savegrid(fname, data, a=6378137.0, f=298.2572221010**-1):
+def savegrid(file_name, data, a=6378137.0, f=298.2572221010**-1):
     """
     Write grid to GROOPS GriddedData file
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     data : array_like(m, n)
         2d ndarray containing the grid coordinates and values. Columns 0-3 contain geometry (lon, lat, h, area),
@@ -224,13 +224,13 @@ def savegrid(fname, data, a=6378137.0, f=298.2572221010**-1):
     >>> gio.savegrid('grids/aod1b_RL04_mod.dat', G, a, f)
 
     """
-    if split(fname)[0] and not isdir(split(fname)[0]):
-        raise FileNotFoundError('Directory ' + split(fname)[0] + ' does not exist.')
+    if split(file_name)[0] and not isdir(split(file_name)[0]):
+        raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
-    giocpp.savegrid(fname, data, a, f)
+    giocpp.savegrid(file_name, data, a, f)
 
 
-def loadinstrument(fname, concat_arcs=False):
+def loadinstrument(file_name, concat_arcs=False):
     """
     Read GROOPS Instrument file format.
 
@@ -238,7 +238,7 @@ def loadinstrument(fname, concat_arcs=False):
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     concat_arcs : bool
         flag whether to concatenate all arcs (default: False)
@@ -263,10 +263,10 @@ def loadinstrument(fname, concat_arcs=False):
     >>> pod2, pod2_type = gio.loadinstrument('satellite/grace2_pod_2008-05.dat', concat_arcs=True)
 
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    arcs, epoch_type = giocpp.loadinstrument(fname)
+    arcs, epoch_type = giocpp.loadinstrument(file_name)
 
     if concat_arcs:
         arcs = np.hstack(arcs)
@@ -274,13 +274,13 @@ def loadinstrument(fname, concat_arcs=False):
     return arcs, epoch_type
 
 
-def loadinstrumentgnssreceiver(fname):
+def loadinstrumentgnssreceiver(file_name):
     """
     Read GROOPS GnssReceiver (observation or residual) instrument file format.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -309,9 +309,9 @@ def loadinstrumentgnssreceiver(fname):
     >>> epochs = arcs[0]['epochs']
     >>> obs = arcs[0]['C1CG04']
     """
-    if not isfile(fname):
-        raise FileNotFoundError("File {} does not exist.".format(fname))
-    arcs = giocpp.loadinstrumentgnssreceiver(fname)
+    if not isfile(file_name):
+        raise FileNotFoundError("File {} does not exist.".format(file_name))
+    arcs = giocpp.loadinstrumentgnssreceiver(file_name)
 
     t0 = dt.datetime(1858, 11, 17)
     for arc in arcs:
@@ -332,13 +332,13 @@ def loadinstrumentgnssreceiver(fname):
     return arcs
 
 
-def loadstarcamera(fname):
+def loadstarcamera(file_name):
     """
     Read rotation matrices from StarCameraFile.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -353,21 +353,21 @@ def loadstarcamera(fname):
     FileNotFoundError
         if file is nonexistent
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    times, data = giocpp.loadstarcamera(fname)
+    times, data = giocpp.loadstarcamera(file_name)
 
     return times.flatten(), data
 
 
-def saveinstrument(fname, arcs, epoch_type=None):
+def saveinstrument(file_name, arcs, epoch_type=None):
     """
     Save arcs to  GROOPS Instrument file format.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     arcs : list of array_like(m, n) or array_like(m, n)
         arc-wise data as ndarray, or single ndarray
@@ -387,24 +387,24 @@ def saveinstrument(fname, arcs, epoch_type=None):
     >>> gio.saveinstrument('tmp/grace2_pod_2008-05_arcs_1-5-17.dat', pod2, pod2_type)
 
     """
-    if split(fname)[0] and not isdir(split(fname)[0]):
-        raise FileNotFoundError('Directory ' + split(fname)[0] + ' does not exist.')
+    if split(file_name)[0] and not isdir(split(file_name)[0]):
+        raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
     if type(arcs) is not list:
         arcs = [arcs]
 
     epoch_type = arcs[0].shape[1]-1 if epoch_type is None else epoch_type
 
-    giocpp.saveinstrument(fname, [arc for arc in arcs], epoch_type)
+    giocpp.saveinstrument(file_name, [arc for arc in arcs], epoch_type)
 
 
-def loadgravityfield(fname):
+def loadgravityfield(file_name):
     """
     Read SphericalHarmonics from gfc-file
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -425,21 +425,21 @@ def loadgravityfield(fname):
     FileNotFoundError
         if file is nonexistent
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    GM, R, anm, sigma2anm = giocpp.loadgravityfield(fname)
+    GM, R, anm, sigma2anm = giocpp.loadgravityfield(file_name)
 
     return GM, R, anm, sigma2anm
 
 
-def savegravityfield(fname, GM, R, anm, sigma2anm=None):
+def savegravityfield(file_name, GM, R, anm, sigma2anm=None):
     """
     Write GravityField instance to gfc-file
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     GM : float
         Geocentric gravitational constant
@@ -458,22 +458,22 @@ def savegravityfield(fname, GM, R, anm, sigma2anm=None):
         if directory is nonexistent or not writeable
 
     """
-    if split(fname)[0] and not isdir(split(fname)[0]):
-        raise FileNotFoundError('Directory ' + split(fname)[0] + ' does not exist.')
+    if split(file_name)[0] and not isdir(split(file_name)[0]):
+        raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
     has_sigmas = sigma2anm is not None
 
-    giocpp.savegravityfield(fname, GM, R, anm, has_sigmas, sigma2anm if has_sigmas else None)
+    giocpp.savegravityfield(file_name, GM, R, anm, has_sigmas, sigma2anm if has_sigmas else None)
 
 
-def loadtimesplines(fname, time):
+def loadtimesplines(file_name, time):
     """
     Read potential coefficients from TimeSplines file
 
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     time : float or datetime.datetime
         evaluation time of TimeSplines file as MJD (float) or datetime object
@@ -493,25 +493,25 @@ def loadtimesplines(fname, time):
     FileNotFoundError
         if file is nonexistent
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
     if isinstance(time, dt.datetime):
         delta = time-dt.datetime(1858, 11, 17)
         time = delta.days + delta.seconds/86400.0
 
-    GM, R, anm = giocpp.loadtimesplines(fname, time)
+    GM, R, anm = giocpp.loadtimesplines(file_name, time)
 
     return GM, R, anm
 
 
-def loadnormalsinfo(fname, return_full_info=False):
+def loadnormalsinfo(file_name, return_full_info=False):
     """
     Read metadata of normal equation file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name of normal equations
     return_full_info : bool
         if true, return lPl, observation count, parameter names, block index and used blocks, else (default)
@@ -536,10 +536,10 @@ def loadnormalsinfo(fname, return_full_info=False):
     FileNotFoundError
         if file is nonexistent
     """
-    if not isfile(splitext(fname)[0] + '.info.xml'):
-        raise FileNotFoundError('File ' + splitext(fname)[0] +'.info.xml' + ' does not exist.')
+    if not isfile(splitext(file_name)[0] + '.info.xml'):
+        raise FileNotFoundError('File ' + splitext(file_name)[0] +'.info.xml' + ' does not exist.')
 
-    lPl, obs_count, names, block_index, used_blocks = giocpp.loadnormalsinfo(fname)
+    lPl, obs_count, names, block_index, used_blocks = giocpp.loadnormalsinfo(file_name)
 
     if return_full_info:
         return lPl, obs_count, names, block_index.flatten().astype(int), used_blocks.astype(bool)
@@ -547,13 +547,13 @@ def loadnormalsinfo(fname, return_full_info=False):
         return lPl, obs_count, names
 
 
-def loadnormals(fname):
+def loadnormals(file_name):
     """
     Read normal equations from file file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -572,19 +572,19 @@ def loadnormals(fname):
     FileNotFoundError
         if file is nonexistent
     """
-    if not isfile(splitext(fname)[0] + '.info.xml'):
-        raise FileNotFoundError('File ' + splitext(fname)[0] +'.info.xml' + ' does not exist.')
+    if not isfile(splitext(file_name)[0] + '.info.xml'):
+        raise FileNotFoundError('File ' + splitext(file_name)[0] +'.info.xml' + ' does not exist.')
 
-    return giocpp.loadnormals(fname)
+    return giocpp.loadnormals(file_name)
 
 
-def savenormals(fname, N, n, lPl, obs_count):
+def savenormals(file_name, N, n, lPl, obs_count):
     """
     Read normal equations from file file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     N : array_like(m, m)
         normal equation matrix
@@ -610,16 +610,16 @@ def savenormals(fname, N, n, lPl, obs_count):
     if lPl.size != n.shape[1]:
         raise ValueError('Number of right hand sides in observation square sum and right hand side vector do not match.')
 
-    return giocpp.savenormals(fname, N, n, lPl, obs_count)
+    return giocpp.savenormals(file_name, N, n, lPl, obs_count)
 
 
-def loadarclist(fname):
+def loadarclist(file_name):
     """
     Read GROOPS arcList file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -634,19 +634,19 @@ def loadarclist(fname):
     FileNotFoundError
         if file does not exist
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    return giocpp.loadarclist(fname)
+    return giocpp.loadarclist(file_name)
 
 
-def loadtimeseries(fname):
+def loadtimeseries(file_name):
     """
     Read Time Series from matrix/instrument file (based on loadmat)
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -660,21 +660,21 @@ def loadtimeseries(fname):
     FileNotFoundError
         if file not found
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    ts = loadmat(fname)
+    ts = loadmat(file_name)
 
     return ts[:, 0], ts[:, 1::]
 
 
-def loadfilter(fname):
+def loadfilter(file_name):
     """
     Read digital filter from file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -693,10 +693,10 @@ def loadfilter(fname):
     ValueError
         if a negative index of an AR coefficient is found (AR part must be causal)
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    A = giocpp.loadmat(fname)
+    A = giocpp.loadmat(file_name)
     idx_bk = A[A[:, 1] != 0, 0].astype(int)
     idx_ak = A[A[:, 2] != 0, 0].astype(int)
 
@@ -716,13 +716,13 @@ def loadfilter(fname):
     return b, a, start_index
 
 
-def savefilter(fname, b, a=np.ones(1), start_index=0):
+def savefilter(file_name, b, a=np.ones(1), start_index=0):
     """
     Save filter coefficients to file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     b : array_like(p,)
         MA coefficients
@@ -741,8 +741,8 @@ def savefilter(fname, b, a=np.ones(1), start_index=0):
     if start_index < 0:
         raise ValueError('start_index must be positive')
 
-    if split(fname)[0] and not isdir(split(fname)[0]):
-        raise FileNotFoundError('Directory ' + split(fname)[0] + ' does not exist.')
+    if split(file_name)[0] and not isdir(split(file_name)[0]):
+        raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
     idx = np.arange(-start_index, -start_index + max(b.size, a.size))
     print(idx)
@@ -752,16 +752,16 @@ def savefilter(fname, b, a=np.ones(1), start_index=0):
     A[0:b.size, 1] = b
     A[start_index:start_index + a.size, 2] = a
 
-    giocpp.savemat(fname, A, 0, 0)
+    giocpp.savemat(file_name, A, 0, 0)
 
 
-def loadpolygon(fname):
+def loadpolygon(file_name):
     """
     Read  a polygon list from file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
 
     Returns
@@ -774,19 +774,19 @@ def loadpolygon(fname):
     FileNotFoundError
         if file does not exist
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    return giocpp.loadpolygon(fname)
+    return giocpp.loadpolygon(file_name)
 
 
-def savepolygon(fname, polygons):
+def savepolygon(file_name, polygons):
     """
     Save a polygon list to file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     polygons : array_like(p, 2) or tuple of array_likes(p, 2)
         tuple of 2-d arrays representing the vertices (longitude, latitude) of each polygon in radians.
@@ -796,8 +796,8 @@ def savepolygon(fname, polygons):
     FileNotFoundError
         if directory is not writeable
     """
-    if split(fname)[0] and not isdir(split(fname)[0]):
-        raise FileNotFoundError('Directory ' + split(fname)[0] + ' does not exist.')
+    if split(file_name)[0] and not isdir(split(file_name)[0]):
+        raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
     if type(polygons) is list:
         polygons = tuple(polygons)
@@ -805,16 +805,16 @@ def savepolygon(fname, polygons):
     if type(polygons) is not tuple:
         polygons = (polygons,)
 
-    return giocpp.savepolygon(fname, polygons)
+    return giocpp.savepolygon(file_name, polygons)
 
 
-def loadparameternames(fname, encoding='utf-8', errors='strict'):
+def loadparameternames(file_name, encoding='utf-8', errors='strict'):
     """
     Read a parameter name list from file.
 
     Parameters
     ----------
-    fname : str
+    file_name : str
         file name
     encoding : str
         encoding used to decode the bytes (see bytes.decode)
@@ -831,7 +831,7 @@ def loadparameternames(fname, encoding='utf-8', errors='strict'):
     FileNotFoundError
         if file does not exist
     """
-    if not isfile(fname):
-        raise FileNotFoundError('File ' + fname + ' does not exist.')
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    return tuple(name.decode(encoding, errors) for name in giocpp.loadparameternames(fname))
+    return tuple(name.decode(encoding, errors) for name in giocpp.loadparameternames(file_name))
