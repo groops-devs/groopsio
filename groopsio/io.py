@@ -59,8 +59,8 @@ def loadmatrix(file_name):
 
     Examples
     --------
-     >>> import groopsio.io as gio
-     >>> A = gio.loadmat('A.dat')
+     >>> import groopsio as gio
+     >>> A = gio.loadmatrix('A.dat')
 
     """
     if not isfile(file_name):
