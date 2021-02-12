@@ -20,14 +20,15 @@ from os.path import isfile, split, isdir, splitext
 import warnings
 import datetime as dt
 import groopsiobase as giocpp
+import typing
 
 
-def loadmat(file_name):
+def loadmat(file_name: str) -> np.ndarray:
     warnings.warn("'loadmat' will be deprecated in favor of 'loadmatrix' in a future release", category=DeprecationWarning)
     return loadmatrix(file_name)
 
 
-def savemat(file_name, M, mtype='general', uplo='upper'):
+def savemat(file_name: str, M: np.ndarray, mtype: str = 'general', uplo: str = 'upper') -> None:
     warnings.warn("'savemat' will be deprecated in favor of 'savematrix' in a future release", category=DeprecationWarning)
     if uplo.lower() not in ('upper', 'lower'):
         raise ValueError("Matrix triangle must be 'upper' or 'lower'.")
@@ -35,7 +36,7 @@ def savemat(file_name, M, mtype='general', uplo='upper'):
     savematrix(file_name, M, mtype, uplo.lower() == 'lower')
 
 
-def loadmatrix(file_name):
+def loadmatrix(file_name: str) -> np.ndarray:
     """
     Read GROOPS Matrix file format.
 
@@ -49,7 +50,7 @@ def loadmatrix(file_name):
 
     Returns
     -------
-    mat : array_like(m, n)
+    mat : ndarray
         2d ndarray containing the matrix data
 
     Raises
@@ -61,7 +62,6 @@ def loadmatrix(file_name):
     --------
      >>> import groopsio as gio
      >>> A = gio.loadmatrix('A.dat')
-
     """
     if not isfile(file_name):
         raise FileNotFoundError('File ' + file_name + ' does not exist.')
@@ -69,7 +69,7 @@ def loadmatrix(file_name):
     return giocpp.loadmat(file_name)
 
 
-def savematrix(file_name, matrix, matrix_type='general', lower=False):
+def savematrix(file_name: str, matrix: np.typing.ArrayLike, matrix_type: str = 'general', lower: bool = False) -> None:
     """
     Write Numpy ndarray to GROOPS Matrix file
 
@@ -104,6 +104,7 @@ def savematrix(file_name, matrix, matrix_type='general', lower=False):
     >>> gio.savematrix('A.dat', A, matrix_type='triangular', lower=True) # A is saved as lower triangular 10x10 matrix
 
     """
+    matrix = np.asarray(matrix)
     if matrix.ndim == 0:
         warnings.warn('0-dimensional array treated as 1x1 matrix.')
         M = np.atleast_2d(matrix)
@@ -124,7 +125,7 @@ def savematrix(file_name, matrix, matrix_type='general', lower=False):
     giocpp.savemat(file_name, matrix, matrix_type.lower(), lower)
 
 
-def loadgridrectangular(file_name):
+def loadgridrectangular(file_name: str) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray, float, float]:
     """
     Read GROOPS GriddedDataRectangular file format.
 
@@ -135,11 +136,11 @@ def loadgridrectangular(file_name):
 
     Returns
     -------
-    data : list of array_like(m, n)
-        2d ndarray containing the grid values
-    lon : array_like(n,)
+    data : (m, n, k) or (m, n) ndarray
+        ndarray containing the grid values (if only one value is in the grid file, the last dimension is squeezed)
+    lon : (n,) ndarray
         1d ndarray containing the longitude values in radians
-    lat : array_like(m,)
+    lat : (m,) ndarray
         1d ndarray containing the latitude values in radians
     a : float
         semi-major axis of ellipsoid
@@ -153,9 +154,8 @@ def loadgridrectangular(file_name):
 
     Examples
     --------
-    >>> import numpy as np
     >>> import groopsio.io as gio
-    >>> data, a, f = gio.loadgrid('grids/aod1b_RL04.dat')
+    >>> data, lon, lat, a, f = gio.loadgridrectangular('grids/aod1b_RL04.dat')
 
     """
     if not isfile(file_name):
@@ -163,10 +163,15 @@ def loadgridrectangular(file_name):
 
     return_tuple = giocpp.loadgridrectangular(file_name)
     data_count = len(return_tuple) - 4
-    return list(return_tuple[0:data_count]), return_tuple[-4].flatten(), return_tuple[-3].flatten(), return_tuple[-2], return_tuple[-1]
+    if data_count > 1:
+        data = np.dstack(return_tuple[0:data_count])
+    else:
+        data = return_tuple[0]
+
+    return data, return_tuple[-4].flatten(), return_tuple[-3].flatten(), return_tuple[-2], return_tuple[-1]
 
 
-def loadgrid(file_name):
+def loadgrid(file_name: str) -> typing.Tuple[np.ndarray, float, float]:
     """
     Read GROOPS GriddedData file format.
 
@@ -177,7 +182,7 @@ def loadgrid(file_name):
 
     Returns
     -------
-    data : array_like(m, n)
+    data : (m, n) ndarray
         2d ndarray containing the grid coordinates and values. Columns 0-3 contain geometry (lon, lat, h, area),
         columns 4-(n-1) contain the corresponding point values
     a : float
@@ -192,10 +197,8 @@ def loadgrid(file_name):
 
     Examples
     --------
-    >>> import numpy as np
     >>> import groopsio.io as gio
     >>> data, a, f = gio.loadgrid('grids/aod1b_RL04.dat')
-
     """
     if not isfile(file_name):
         raise FileNotFoundError('File ' + file_name + ' does not exist.')
@@ -205,7 +208,7 @@ def loadgrid(file_name):
     return data, a, f
 
 
-def savegrid(file_name, data, a=6378137.0, f=298.2572221010**-1):
+def savegrid(file_name: str, data: np.typing.ArrayLike, a: float = 6378137.0, f: float = 298.2572221010**-1) -> None:
     """
     Write grid to GROOPS GriddedData file
 
@@ -240,7 +243,7 @@ def savegrid(file_name, data, a=6378137.0, f=298.2572221010**-1):
     giocpp.savegrid(file_name, data, a, f)
 
 
-def loadinstrument(file_name, concat_arcs=False):
+def loadinstrument(file_name: str, concat_arcs: bool = False) -> typing.Tuple[typing.Union[np.ndarray, typing.List[np.ndarray]], int]:
     """
     Read GROOPS Instrument file format.
 
@@ -284,7 +287,7 @@ def loadinstrument(file_name, concat_arcs=False):
     return arcs, epoch_type
 
 
-def loadinstrumentgnssreceiver(file_name):
+def loadinstrumentgnssreceiver(file_name: str) -> typing.Tuple[typing.Dict[str, np.ndarray]]:
     """
     Read GROOPS GnssReceiver (observation or residual) instrument file format.
 
@@ -309,7 +312,6 @@ def loadinstrumentgnssreceiver(file_name):
     ------
     FileNotFoundError
         if file is nonexistent
-
 
     Examples
     --------
@@ -342,7 +344,7 @@ def loadinstrumentgnssreceiver(file_name):
     return arcs
 
 
-def loadstarcamera(file_name):
+def loadstarcamera(file_name: str) -> typing.Tuple[np.ndarray, typing.Tuple[np.ndarray]]:
     """
     Read rotation matrices from StarCameraFile.
 
@@ -353,9 +355,9 @@ def loadstarcamera(file_name):
 
     Returns
     -------
-    times : array_like(m,)
+    times : (m,) ndarray
         time stamps in MJD
-    data : tuple of array_like(3,3)
+    data : tuple of (3,3) ndarray
         rotation matrices for each epoch
 
     Raises
@@ -371,7 +373,7 @@ def loadstarcamera(file_name):
     return times.flatten(), data
 
 
-def saveinstrument(file_name, arcs, epoch_type=None):
+def saveinstrument(file_name: str, arcs: typing.Union[typing.List[np.ndarray], np.ndarray], epoch_type: typing.Optional[int] = None):
     """
     Save arcs to  GROOPS Instrument file format.
 
@@ -379,7 +381,7 @@ def saveinstrument(file_name, arcs, epoch_type=None):
     ----------
     file_name : str
         file name
-    arcs : list of array_like(m, n) or array_like(m, n)
+    arcs : ndarray or list of ndarray
         arc-wise data as ndarray, or single ndarray
     epoch_type : int
         enum of epoch type (Default: MISCVALUES)
@@ -408,7 +410,7 @@ def saveinstrument(file_name, arcs, epoch_type=None):
     giocpp.saveinstrument(file_name, [arc for arc in arcs], epoch_type)
 
 
-def loadgravityfield(file_name):
+def loadgravityfield(file_name: str) -> typing.Tuple[float, float, np.ndarray, np.ndarray]:
     """
     Read SphericalHarmonics from gfc-file
 
@@ -443,7 +445,7 @@ def loadgravityfield(file_name):
     return GM, R, anm, sigma2anm
 
 
-def savegravityfield(file_name, GM, R, anm, sigma2anm=None):
+def savegravityfield(file_name: str, GM: float, R: float, anm: np.typing.ArrayLike, sigma2anm: typing.Optional[np.typing.ArrayLike] = None) -> None:
     """
     Write GravityField instance to gfc-file
 
@@ -476,7 +478,7 @@ def savegravityfield(file_name, GM, R, anm, sigma2anm=None):
     giocpp.savegravityfield(file_name, GM, R, anm, has_sigmas, sigma2anm if has_sigmas else None)
 
 
-def loadtimesplines(file_name, time):
+def loadtimesplines(file_name: str, time: typing.Union[dt.datetime, float]) -> typing.Tuple[float, float, np.ndarray]:
     """
     Read potential coefficients from TimeSplines file
 
@@ -515,7 +517,7 @@ def loadtimesplines(file_name, time):
     return GM, R, anm
 
 
-def loadnormalsinfo(file_name, return_full_info=False):
+def loadnormalsinfo(file_name: str, return_full_info: bool = False) -> typing.Tuple[np.ndarray, int, typing.Tuple[str], typing.Optional[np.ndarray], typing.Optional[np.ndarray]]:
     """
     Read metadata of normal equation file.
 
@@ -557,7 +559,7 @@ def loadnormalsinfo(file_name, return_full_info=False):
         return lPl, obs_count, names
 
 
-def loadnormals(file_name):
+def loadnormals(file_name: str) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray, int]:
     """
     Read normal equations from file file.
 
@@ -588,7 +590,7 @@ def loadnormals(file_name):
     return giocpp.loadnormals(file_name)
 
 
-def savenormals(file_name, N, n, lPl, obs_count):
+def savenormals(file_name: str, N: np.typing.ArrayLike, n: np.typing.ArrayLike, lPl: np.typing.ArrayLike, obs_count: int) -> None:
     """
     Read normal equations from file file.
 
@@ -611,19 +613,19 @@ def savenormals(file_name, N, n, lPl, obs_count):
         if dimensions of passed arguments do not match
 
     """
-    if (N.ndim != 2) or (N.shape[0] != N.shape[1]):
+    if (np.asarray(N).ndim != 2) or (np.asarray(N).shape[0] != np.asarray(N).shape[1]):
         raise ValueError('Square normal equation coefficient matrix required.')
 
-    if (n.ndim != 2) or (n.shape[0] != N.shape[0]):
+    if (np.asarray(n).ndim != 2) or (np.asarray(n).shape[0] != np.asarray(n).shape[0]):
         raise ValueError('Number of parameters in normal equation coefficient matrix and right hand side do not match.')
 
-    if lPl.size != n.shape[1]:
+    if np.asarray(lPl).size != np.asarray(n).shape[1]:
         raise ValueError('Number of right hand sides in observation square sum and right hand side vector do not match.')
 
-    return giocpp.savenormals(file_name, N, n, lPl, obs_count)
+    giocpp.savenormals(file_name, N, n, lPl, obs_count)
 
 
-def loadarclist(file_name):
+def loadarclist(file_name: str) -> typing.Tuple[typing.Tuple[int], typing.Tuple[float]]:
     """
     Read GROOPS arcList file.
 
@@ -650,9 +652,9 @@ def loadarclist(file_name):
     return giocpp.loadarclist(file_name)
 
 
-def loadtimeseries(file_name):
+def loadtimeseries(file_name: str) -> typing.Tuple[np.ndarray, np.ndarray]:
     """
-    Read Time Series from matrix/instrument file (based on loadmat)
+    Read Time Series from matrix/instrument file (based on loadmatrix)
 
     Parameters
     ----------
@@ -678,7 +680,7 @@ def loadtimeseries(file_name):
     return ts[:, 0], ts[:, 1::]
 
 
-def loadfilter(file_name):
+def loadfilter(file_name: str) -> typing.Tuple[np.ndarray, np.ndarray, int]:
     """
     Read digital filter from file.
 
@@ -726,7 +728,7 @@ def loadfilter(file_name):
     return b, a, start_index
 
 
-def savefilter(file_name, b, a=np.ones(1), start_index=0):
+def savefilter(file_name: str, b: np.typing.ArrayLike, a: np.typing.ArrayLike = np.ones(1), start_index: int = 0) -> None:
     """
     Save filter coefficients to file.
 
@@ -754,8 +756,10 @@ def savefilter(file_name, b, a=np.ones(1), start_index=0):
     if split(file_name)[0] and not isdir(split(file_name)[0]):
         raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
+    a = np.asarray(a)
+    b = np.asarray(b)
+
     idx = np.arange(-start_index, -start_index + max(b.size, a.size))
-    print(idx)
 
     A = np.zeros((idx.size, 3))
     A[:, 0] = idx
@@ -765,7 +769,7 @@ def savefilter(file_name, b, a=np.ones(1), start_index=0):
     giocpp.savemat(file_name, A, 0, 0)
 
 
-def loadpolygon(file_name):
+def loadpolygon(file_name: str) -> typing.Tuple[np.ndarray]:
     """
     Read  a polygon list from file.
 
@@ -790,7 +794,7 @@ def loadpolygon(file_name):
     return giocpp.loadpolygon(file_name)
 
 
-def savepolygon(file_name, polygons):
+def savepolygon(file_name: str, polygons: typing.Union[np.typing.ArrayLike, typing.Container[np.typing.ArrayLike]]) -> None:
     """
     Save a polygon list to file.
 
@@ -818,7 +822,7 @@ def savepolygon(file_name, polygons):
     return giocpp.savepolygon(file_name, polygons)
 
 
-def loadparameternames(file_name, encoding='utf-8', errors='strict'):
+def loadparameternames(file_name: str, encoding: str = 'utf-8', errors: str = 'strict') -> typing.Tuple[str]:
     """
     Read a parameter name list from file.
 
