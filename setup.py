@@ -24,7 +24,7 @@ class BuildCMakeExt(build_ext):
 
     def build_cmake(self, extension: Extension):
 
-        self.announce("Preparing the build environment", level=3)
+        self.announce("preparing the build environment", level=3)
 
         workdir = os.getcwd()
         build_dir = pathlib.Path('build')
@@ -65,5 +65,5 @@ setup(
     ext_modules=[CMakeExtension(name="groopsiobase")],
     license='GPL-3.0',
     cmdclass={'build_ext': BuildCMakeExt},
-    install_requires=['cmake', 'numpy']
+    install_requires=['cmake>=3.16', 'numpy']
 )
