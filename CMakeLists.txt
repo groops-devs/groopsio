@@ -9,8 +9,17 @@ include_directories(${Python3_NumPy_INCLUDE_DIRS})
 
 find_package(EXPAT  REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})
-find_package(BLAS   REQUIRED)
-find_package(LAPACK REQUIRED)
+
+set(BLA_VENDOR Intel10_64lp)
+find_package(BLAS   PATHS ${Python3_LIBRARY_DIRS} NO_DEFAULT_PATH)
+find_package(LAPACK PATHS ${Python3_LIBRARY_DIRS} NO_DEFAULT_PATH)
+
+if(FOUND_BLAS AND FOUND_LAPACK)
+else()
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+endif()
+
 find_library(LIB_Z z)
 if(LIB_Z)
   find_path(ZLIB_INCLUDE_DIR NAMES zlib.h)
