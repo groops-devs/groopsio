@@ -1,71 +1,66 @@
-import setuptools
-from numpy.distutils.misc_util import Configuration
-from numpy.distutils.core import setup
-import numpy as np
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 import os
+import pathlib
+import shutil
 
 
-def configuration(parent_package='', top_path=None):
+class CMakeExtension(Extension):
+    
+    def __init__(self, name, sources=[]):
+        super().__init__(name = name, sources = sources)
 
-    groops_dir = os.getenv('GROOPS_SOURCE_DIR')
-    if groops_dir is None:
-        groops_dir = os.path.join(os.path.expanduser('~'), 'groops', 'source')
 
-    include_dirs = [groops_dir]
-    library_dirs = []
-    libraries = ['expat', 'z', 'gfortran', 'stdc++fs']
+class BuildCMakeExt(build_ext):
 
-    source_files = []
-    with open('sources.list', 'r') as f:
-        for line in f:
-            if len(line) > 0 and not line.startswith('#'):
-                source_files.append(os.path.join(groops_dir, line.strip()))
+    def run(self):
 
-    lapack_opts = np.__config__.lapack_opt_info
-    try:
-        include_dirs.extend(lapack_opts['include_dirs'])
-    except KeyError:
-        pass
-    try:
-        library_dirs.extend(lapack_opts['library_dirs'])
-    except KeyError:
-        pass
-    try:
-        libraries.extend(lapack_opts['libraries'])
-    except KeyError:
-        pass
-    blas_opts = np.__config__.blas_opt_info
-    try:
-        include_dirs.extend(blas_opts['include_dirs'])
-    except KeyError:
-        pass
-    try:
-        library_dirs.extend(blas_opts['library_dirs'])
-    except KeyError:
-        pass
-    try:
-        libraries.extend(blas_opts['libraries'])
-    except KeyError:
-        pass
+        for extension in self.extensions:            
+            if isinstance(extension, CMakeExtension):
+                self.build_cmake(extension)        
+        
+        self.extensions = list(filter(lambda e: not isinstance(e, CMakeExtension), self.extensions))        
+        super().run()
 
-    config = Configuration()
-    config.add_installed_library('groopsdeps', source_files, 'groopsio/lib',
-                                 build_info={'include_dirs': include_dirs, 'libraries': libraries,
-                                 'library_dirs': library_dirs})
+    def build_cmake(self, extension: Extension):
+        
+        self.announce("Preparing the build environment", level=3)
 
-    libraries.append('groopsdeps')
-    library_dirs.append('groopsio/lib')
-    config.add_extension('groopsiobase',  ["src/groopsio.cpp"], language='c++',
-                        include_dirs=include_dirs, libraries=libraries, library_dirs=library_dirs)
+        workdir = os.getcwd()
+        build_dir = pathlib.Path('build')
+        os.makedirs(build_dir, exist_ok=True)
 
-    return config
+        extension_path = pathlib.Path(self.get_ext_fullpath(extension.name))
+        install_path = extension_path.parent.absolute()
+        extension_name = extension_path.parts[-1]
+        os.makedirs(install_path, exist_ok=True)
 
+        self.announce("configuring CMake project", level=3)
+        os.chdir(build_dir)
+
+        groops_dir = pathlib.Path(os.getenv('GROOPS_SOURCE_DIR'))
+        if groops_dir is None:
+            groops_dir = pathlib.Path(os.path.join(os.path.expanduser('~'), 'groops', 'source'))
+
+        cmake_command = ['cmake', '..', '-DGROOPS_SOURCE_DIR={0}'.format(groops_dir), '-DEXTENSION_LIBRARY_NAME={0}'.format(extension_name)]
+        if os.name == 'nt':
+            cmake_command.extend(['-G', 'MinGW Makefiles'])
+        self.spawn(cmake_command)
+
+        self.announce("building binaries", level=3)
+        self.spawn(["cmake", "--build", '.', "--target", extension_name, "--config", "Release"])        
+        shutil.copy(extension_name, install_path)
+        os.chdir(workdir)
 
 setup(
     name='groopsio',
     version='0.1',
     author='Andreas Kvas',
-    description='A python package to enable I/O for GROOPS files',
+    description='A python package to read and write GROOPS files',
+    long_description=open("README.md", 'r').read(),
     packages=['groopsio'],
-    configuration=configuration
+    ext_modules=[CMakeExtension(name="groopsiobase")],
+    license='GPL-3.0',
+    cmdclass={'build_ext': BuildCMakeExt},
+    install_requires=['cmake', 'numpy']
 )
