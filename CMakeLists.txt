@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 find_package(Python3 COMPONENTS Interpreter Development NumPy)
 include_directories(${Python3_INCLUDE_DIRS})
-include_directories(${Python3_NumPy_INCLUDE_DIRS})  
+include_directories(${Python3_NumPy_INCLUDE_DIRS})
 
 find_package(EXPAT  REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})

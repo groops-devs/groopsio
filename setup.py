@@ -6,24 +6,24 @@ import shutil
 
 
 class CMakeExtension(Extension):
-    
+
     def __init__(self, name, sources=[]):
-        super().__init__(name = name, sources = sources)
+        super().__init__(name=name, sources=sources)
 
 
 class BuildCMakeExt(build_ext):
 
     def run(self):
 
-        for extension in self.extensions:            
+        for extension in self.extensions:
             if isinstance(extension, CMakeExtension):
-                self.build_cmake(extension)        
-        
-        self.extensions = list(filter(lambda e: not isinstance(e, CMakeExtension), self.extensions))        
+                self.build_cmake(extension)
+
+        self.extensions = list(filter(lambda e: not isinstance(e, CMakeExtension), self.extensions))
         super().run()
 
     def build_cmake(self, extension: Extension):
-        
+
         self.announce("Preparing the build environment", level=3)
 
         workdir = os.getcwd()
@@ -50,9 +50,10 @@ class BuildCMakeExt(build_ext):
         self.spawn(cmake_command)
 
         self.announce("building binaries", level=3)
-        self.spawn(["cmake", "--build", '.', "--target", extension_name, "--config", "Release"])        
+        self.spawn(["cmake", "--build", '.', "--target", extension_name, "--config", "Release"])
         shutil.copy(extension_name, install_path)
         os.chdir(workdir)
+
 
 setup(
     name='groopsio',
