@@ -38,9 +38,11 @@ class BuildCMakeExt(build_ext):
         self.announce("configuring CMake project", level=3)
         os.chdir(build_dir)
 
-        groops_dir = pathlib.Path(os.getenv('GROOPS_SOURCE_DIR'))
-        if groops_dir is None:
+        groops_env_var = os.getenv('GROOPS_SOURCE_DIR')
+        if groops_env_var is None:
             groops_dir = pathlib.Path(os.path.join(os.path.expanduser('~'), 'groops', 'source'))
+        else:
+            groops_dir = pathlib.Path(groops_env_var)
 
         cmake_command = ['cmake', '..', '-DGROOPS_SOURCE_DIR={0}'.format(groops_dir), '-DEXTENSION_LIBRARY_NAME={0}'.format(extension_name)]
         if os.name == 'nt':
