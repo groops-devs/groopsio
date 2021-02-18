@@ -5,8 +5,8 @@ groopsio - Read and write GROOPS file formats in  Python
 What is groopsio
 ----------------
 
-groopsio is a free Open Source software package that enables I/O for GROOPS file formats in Python.
-It is written as a C/C++ extension for NumPy and requires a few GROOPS  source files.
+groopsio is a free Open Source software package for reading and writing GROOPS file formats in Python.
+It is written as a C/C++ extension to NumPy and requires a few GROOPS  source files.
 
 Installation
 ------------
@@ -17,13 +17,13 @@ In the root directory of the package (i.e. the directory containing the ``setup.
     GROOPS_SOURCE_DIR=/path/to/groops/source pip install .
 
 to install the package and its dependencies. The environment variable ``GROOPS_SOURCE_DIR`` should point to the source
-folder of GROOPS (if ommitted, ``$HOME/groops/source`` is used).
-Note that you will need a toolchain capable of building NumPy extensions.
-See the [NumPy documentation](https://numpy.org/doc/stable/user/building.html) for details.
+folder of GROOPS (if ommitted, ``$HOME/groops/source`` or the Windows equivalent is used).
+
+Note that you will need a toolchain capable of building GROOPS. See the GROOPS installation guide for
+[Windows](https://github.com/groops-devs/groops/blob/main/INSTALL.md#microsoft-windows)
+or [Linux](https://github.com/groops-devs/groops/blob/main/INSTALL.md#linux) for details (no optional steps are necessary for groopsio).
 
 License
 -------
 
 groopsio a free Open Source software released under the GPLv3 license.
-
-
