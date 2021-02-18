@@ -272,7 +272,7 @@ static PyObject* savegrid(PyObject* /*self*/, PyObject* args)
     if(!PyArg_ParseTuple(args, "sOdd", &s, &data_array, &a, &f))
       throw(Exception("Unable to parse arguments."));
 
-    Ellipsoid ell(a, f);
+    Ellipsoid ell(a, 1/f);
     Matrix data = fromPyObject(data_array);
     const UInt pointCount = data.rows();
     const UInt valueCount = data.columns() - 4;
