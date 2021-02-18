@@ -272,7 +272,7 @@ static PyObject* savegrid(PyObject* /*self*/, PyObject* args)
     if(!PyArg_ParseTuple(args, "sOdd", &s, &data_array, &a, &f))
       throw(Exception("Unable to parse arguments."));
 
-    Ellipsoid ell(a, f);
+    Ellipsoid ell(a, 1/f);
     Matrix data = fromPyObject(data_array);
     const UInt pointCount = data.rows();
     const UInt valueCount = data.columns() - 4;
@@ -301,38 +301,40 @@ static PyObject* savegrid(PyObject* /*self*/, PyObject* args)
 }
 
 /*
- * Load spherical harmonic coefficients from gfc-file
+ * Load spherical harmonic coefficients from GROOPS file
  */
-static PyObject* loadgravityfield(PyObject* /*self*/, PyObject* args)
+static PyObject* loadsphericalharmonics(PyObject* /*self*/, PyObject* args)
 {
   try
   {
     const char *s;
-    if(!PyArg_ParseTuple(args, "s", &s))
+    PyObject *returnErrors;
+    if(!PyArg_ParseTuple(args, "sO", &s, &returnErrors))
       throw(Exception("Unable to parse arguments."));
 
     SphericalHarmonics coeffs;
     readFileSphericalHarmonics(FileName(std::string(s)), coeffs);
-    const Bool hasSigmas = (coeffs.sigma2cnm().size()) && ((quadsum(coeffs.sigma2cnm())+quadsum(coeffs.sigma2snm())) != 0);
+
+    PyObject *return_tuple = PyTuple_New((PyObject_IsTrue(returnErrors) ? 4 : 3));
 
     Matrix anm = coeffs.cnm();
     anm.setType(Matrix::GENERAL);
     axpy(1.0, coeffs.snm().slice(1, 1, coeffs.maxDegree(), coeffs.maxDegree()).trans(), anm.slice(0, 1, coeffs.maxDegree(), coeffs.maxDegree()));
+    PyTuple_SetItem(return_tuple, 0, fromMatrix(anm));
+    PyTuple_SetItem(return_tuple, 1, PyFloat_FromDouble(coeffs.GM()));
+    PyTuple_SetItem(return_tuple, 2, PyFloat_FromDouble(coeffs.R()));
 
-    Matrix sigma2anm(coeffs.maxDegree()+1, coeffs.maxDegree()+1, NAN_EXPR);
-    if(hasSigmas)
+    if(PyObject_IsTrue(returnErrors))
     {
-      sigma2anm = coeffs.sigma2cnm();
-      sigma2anm.setType(Matrix::GENERAL);
-      axpy(1.0, coeffs.sigma2snm().slice(1, 1, coeffs.maxDegree(), coeffs.maxDegree()).trans(), sigma2anm.slice(0, 1, coeffs.maxDegree(), coeffs.maxDegree()));
+      Matrix sigma2anm(coeffs.maxDegree()+1, coeffs.maxDegree()+1, NAN_EXPR);
+      if(coeffs.sigma2cnm().size() && ((quadsum(coeffs.sigma2cnm())+quadsum(coeffs.sigma2snm())) != 0))
+      {
+        sigma2anm = coeffs.sigma2cnm();
+        sigma2anm.setType(Matrix::GENERAL);
+        axpy(1.0, coeffs.sigma2snm().slice(1, 1, coeffs.maxDegree(), coeffs.maxDegree()).trans(), sigma2anm.slice(0, 1, coeffs.maxDegree(), coeffs.maxDegree()));
+      }
+      PyTuple_SetItem(return_tuple, 3, fromMatrix(sigma2anm));
     }
-
-    PyObject *return_tuple = PyTuple_New(4); // GM, R, anm, sigma_anm
-
-    PyTuple_SetItem(return_tuple, 0, PyFloat_FromDouble(coeffs.GM()));
-    PyTuple_SetItem(return_tuple, 1, PyFloat_FromDouble(coeffs.R()));
-    PyTuple_SetItem(return_tuple, 2, fromMatrix(anm));
-    PyTuple_SetItem(return_tuple, 3, fromMatrix(sigma2anm));
 
     return return_tuple;
   }
@@ -346,17 +348,18 @@ static PyObject* loadgravityfield(PyObject* /*self*/, PyObject* args)
 /*
  * Save Python objects to a gfc-file
  */
-static PyObject* savegravityfield(PyObject* /*self*/, PyObject* args)
+static PyObject* savesphericalharmonics(PyObject* /*self*/, PyObject* args)
 {
   try
   {
     const char *s;
     Double GM = 0.0;
     Double R = 0.0;
-    Int hasSigmas = 0;
     PyObject *anm, *sigma2anm;
-    if(!PyArg_ParseTuple(args, "sddOiO", &s, &GM, &R, &anm, &hasSigmas, &sigma2anm))
+    if(!PyArg_ParseTuple(args, "sOddO", &s, &anm, &GM, &R, &sigma2anm))
       throw(Exception("Unable to parse arguments."));
+
+    Bool hasSigmas = sigma2anm != Py_None;
 
     Matrix _cnm = fromPyObject(anm);
     const UInt maxDegree = _cnm.rows()-1;

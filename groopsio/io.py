@@ -410,27 +410,28 @@ def saveinstrument(file_name: str, arcs: typing.Union[typing.List[np.ndarray], n
     giocpp.saveinstrument(file_name, [arc for arc in arcs], epoch_type)
 
 
-def loadgravityfield(file_name: str) -> typing.Tuple[float, float, np.ndarray, np.ndarray]:
+def loadsphericalharmonics(file_name: str, retur_sigmas: bool = False) -> typing.Tuple[float, float, np.ndarray, np.ndarray]:
     """
-    Read SphericalHarmonics from gfc-file
+    Read spherical harmonics data from file
 
     Parameters
     ----------
     file_name : str
         file name
+    return_sigmas : bool
+        flag whether whether to return formal or calibrated errors (if present)
 
     Returns
     -------
+    anm : array_like(nmax+1, nmax+1)
+        Potential coefficients as ndarray. cosine coefficients are stored in the lower triangle, sine coefficients
+        above the superdiagonal
     GM : float
         Geocentric gravitational constant
     R : float
         Reference radius
-    anm : array_like(nmax+1, nmax+1)
-        Potential coefficients as ndarray. cosine coefficients are stored in the lower triangle, sine coefficients
-        above the superdiagonal
     sigma2anm : array_like(nmax+1, nmax+1)
-        Variances of potential coefficients, in the same structure as anm. If the gfc file does not provide accuracies,
-        a NAN array is returned.
+        variances of potential coefficients in the same structure as anm (if the file does not contain formal erros, a NaN array is returned), only returned if return_sigmas=True.
 
     Raises
     ------
@@ -440,29 +441,26 @@ def loadgravityfield(file_name: str) -> typing.Tuple[float, float, np.ndarray, n
     if not isfile(file_name):
         raise FileNotFoundError('File ' + file_name + ' does not exist.')
 
-    GM, R, anm, sigma2anm = giocpp.loadgravityfield(file_name)
-
-    return GM, R, anm, sigma2anm
+    return giocpp.loadsphericalharmonics(file_name, return_sigmas)
 
 
-def savegravityfield(file_name: str, GM: float, R: float, anm: np.typing.ArrayLike, sigma2anm: typing.Optional[np.typing.ArrayLike] = None) -> None:
+def savesphericalharmonics(file_name: str, anm: np.typing.ArrayLike, GM: float, R: float, sigma2anm: typing.Optional[np.typing.ArrayLike] = None) -> None:
     """
-    Write GravityField instance to gfc-file
+    Write spherical harmonics data to file
 
     Parameters
     ----------
     file_name : str
         file name
+    anm : array_like(nmax+1, nmax+1)
+        Potential coefficients as ndarray. cosine coefficients are stored in the lower triangle, sine coefficients
+        above the superdiagonal
     GM : float
         Geocentric gravitational constant
     R : float
         Reference radius
-    anm : array_like(nmax+1, nmax+1)
-        Potential coefficients as ndarray. cosine coefficients are stored in the lower triangle, sine coefficients
-        above the superdiagonal
     sigma2anm : array_like(nmax+1, nmax+1)
-        Variances of potential coefficients, in the same structure as anm. Default behavior is to not save accuracies
-        (sigma2anm = None).
+        Variances of potential coefficients, in the same structure as anm. Default behavior is to not save accuracies (sigma2anm = None).
 
     Raises
     ------
@@ -473,9 +471,21 @@ def savegravityfield(file_name: str, GM: float, R: float, anm: np.typing.ArrayLi
     if split(file_name)[0] and not isdir(split(file_name)[0]):
         raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
 
-    has_sigmas = sigma2anm is not None
+    if isinstance(sigma2anm, np.ndarray) and np.all(np.isnan(sigma2anm)):
+        sigma2anm = None
 
-    giocpp.savegravityfield(file_name, GM, R, anm, has_sigmas, sigma2anm if has_sigmas else None)
+    giocpp.savesphericalharmonics(file_name, anm, GM, R, sigma2anm)
+
+
+def loadgravityfield(file_name):
+    warnings.warn("'loadgravityfield' will be deprecated in favor of 'loadsphericalharmonics' in a future release", category=DeprecationWarning)
+    anm, GM, R, sigma2anm = giocpp.loadsphericalharmonics(file_name, True)
+    return GM, R, anm, sigma2anm
+
+
+def savegravityfield(file_name, GM, R, anm, sigma2anm=None):
+    warnings.warn("'savegravityfield' will be deprecated in favor of 'savesphericalharmonics' in a future release", category=DeprecationWarning)
+    savesphericalharmonics(file_name, anm, GM, R, sigma2anm)
 
 
 def loadtimesplines(file_name: str, time: typing.Union[dt.datetime, float]) -> typing.Tuple[float, float, np.ndarray]:
@@ -492,13 +502,13 @@ def loadtimesplines(file_name: str, time: typing.Union[dt.datetime, float]) -> t
 
     Returns
     -------
+    anm : array_like(nmax+1, nmax+1)
+        Potential coefficients as ndarray. cosine coefficients are stored in the lower triangle, sine coefficients
+        above the superdiagonal
     GM : float
         Geocentric gravitational constant
     R : float
         Reference radius
-    anm : array_like(nmax+1, nmax+1)
-        Potential coefficients as ndarray. cosine coefficients are stored in the lower triangle, sine coefficients
-        above the superdiagonal
 
     Raises
     ------
@@ -514,7 +524,7 @@ def loadtimesplines(file_name: str, time: typing.Union[dt.datetime, float]) -> t
 
     GM, R, anm = giocpp.loadtimesplines(file_name, time)
 
-    return GM, R, anm
+    return anm, GM, R
 
 
 def loadnormalsinfo(file_name: str, return_full_info: bool = False) -> typing.Tuple[np.ndarray, int, typing.Tuple[str], typing.Optional[np.ndarray], typing.Optional[np.ndarray]]:

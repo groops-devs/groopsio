@@ -27,8 +27,8 @@ extern "C" {
     {"loadgrid", (PyCFunction)loadgrid, METH_VARARGS, ""},
     {"savegrid", (PyCFunction)savegrid, METH_VARARGS, ""},
 
-    {"loadgravityfield", (PyCFunction)loadgravityfield, METH_VARARGS, ""},
-    {"savegravityfield", (PyCFunction)savegravityfield, METH_VARARGS, ""},
+    {"loadsphericalharmonics", (PyCFunction)loadsphericalharmonics, METH_VARARGS, ""},
+    {"savesphericalharmonics", (PyCFunction)savesphericalharmonics, METH_VARARGS, ""},
 
     {"loadtimesplines", (PyCFunction)loadtimesplines, METH_VARARGS, ""},
 
