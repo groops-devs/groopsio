@@ -44,7 +44,9 @@ class BuildCMakeExt(build_ext):
         else:
             groops_dir = pathlib.Path(groops_env_var)
 
-        cmake_command = ['cmake', '..', '-DGROOPS_SOURCE_DIR={0}'.format(groops_dir), '-DEXTENSION_LIBRARY_NAME={0}'.format(extension_name)]
+        import numpy as np
+        cmake_command = ['cmake', '..', '-DGROOPS_SOURCE_DIR={0}'.format(groops_dir), '-DEXTENSION_LIBRARY_NAME={0}'.format(extension_name),
+                         '-DLAPACK_LITE={0}'.format(np.linalg.lapack_lite.__file__)]
         if os.name == 'nt':
             cmake_command.extend(['-G', 'MinGW Makefiles'])
         self.spawn(cmake_command)
