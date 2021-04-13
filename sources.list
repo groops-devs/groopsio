@@ -1,3 +1,4 @@
+set(SOURCES
 base/constants.cpp
 base/doodson.cpp
 base/ellipsoid.cpp
@@ -56,8 +57,10 @@ parser/xml.cpp
 classes/loop/loop.cpp
 classes/timeSeries/timeSeries.cpp
 classes/condition/condition.cpp
+classes/matrixGenerator/matrixGenerator.cpp
 parallel/parallelSingle.cpp
 parallel/matrixDistributed.cpp
 external/lapack/blasWrapper.f
 external/lapack/lapackWrapper.f
 external/igrf/igrf13.f
+)

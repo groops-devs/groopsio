@@ -1,7 +1,7 @@
 /*
  * Python module for GROOPS file I/O.
  *
- * Copyright (C) 2020 Andreas Kvas
+ * Copyright (C) 2020 - 2021 GROOPS Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,15 @@ extern "C" {
 
   /* Exposed functions */
   static PyMethodDef iobase_methods[] = {
-    {"loadmat", (PyCFunction)loadmat, METH_VARARGS, ""},
-    {"savemat", (PyCFunction)savemat, METH_VARARGS, ""},
+    {"loadmat", (PyCFunction)loadmatrix, METH_VARARGS, ""},
+    {"savemat", (PyCFunction)savematrix, METH_VARARGS, ""},
 
     {"loadgridrectangular", (PyCFunction)loadgridrectangular, METH_VARARGS, ""},
     {"loadgrid", (PyCFunction)loadgrid, METH_VARARGS, ""},
     {"savegrid", (PyCFunction)savegrid, METH_VARARGS, ""},
 
-    {"loadgravityfield", (PyCFunction)loadgravityfield, METH_VARARGS, ""},
-    {"savegravityfield", (PyCFunction)savegravityfield, METH_VARARGS, ""},
+    {"loadsphericalharmonics", (PyCFunction)loadsphericalharmonics, METH_VARARGS, ""},
+    {"savesphericalharmonics", (PyCFunction)savesphericalharmonics, METH_VARARGS, ""},
 
     {"loadtimesplines", (PyCFunction)loadtimesplines, METH_VARARGS, ""},
 
@@ -46,6 +46,7 @@ extern "C" {
     {"savenormals", (PyCFunction)savenormals, METH_VARARGS, ""},
 
     {"loadpolygon", (PyCFunction)loadpolygon, METH_VARARGS, ""},
+    {"savepolygon", (PyCFunction)savepolygon, METH_VARARGS, ""},
 
     {NULL, NULL, 0, NULL}
   };
