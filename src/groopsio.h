@@ -93,6 +93,8 @@ Matrix fromPyObject(PyObject *pyObj, Matrix::Type t = Matrix::GENERAL,
                     Matrix::Uplo uplo = Matrix::UPPER)
 {
   PyObject *pyArr = PyArray_FROM_OTF(pyObj, NPY_DOUBLE, NPY_ARRAY_IN_FARRAY);
+  if(!pyArr)
+    throw(Exception("Unable to convert input to float array."));
   Int ndims = PyArray_NDIM((PyArrayObject*)pyArr);
   if(ndims<1 || ndims>2)
     throw(Exception("Expected one or two dimensional Numpy Array (got "+ndims%"%i"s+" dimensions)."));
