@@ -856,20 +856,3 @@ def loadparameternames(file_name, encoding='utf-8', errors='strict'):
 
     return tuple(name.decode(encoding, errors) for name in giocpp.loadparameternames(file_name))
 
-
-def val2gnsstype(value):
-    """
-    Converts a UInt into a str representingt he GnssType
-
-    Parameters
-    ----------
-    value : int
-        UInt64 value representing the GnssType
-
-    Returns
-    -------
-    parameter_names : Gnss type str
-
-    """
-
-    return giocpp.val2gnsstype(value)

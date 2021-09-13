@@ -47,7 +47,6 @@ extern "C" {
 
     {"loadpolygon", (PyCFunction)loadpolygon, METH_VARARGS, ""},
     {"savepolygon", (PyCFunction)savepolygon, METH_VARARGS, ""},
-    {"val2gnsstype", (PyCFunction)val2gnsstype, METH_VARARGS, ""},
 
     {NULL, NULL, 0, NULL}
   };

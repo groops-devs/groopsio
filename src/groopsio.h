@@ -935,27 +935,4 @@ static PyObject* loadparameternames(PyObject* /*self*/, PyObject* args)
   }
 }
 
-/*
- * Converts a number into a GnssType str
- */
-static PyObject* val2gnsstype(PyObject* /*self*/, PyObject* args)
-{
-    try
-    {
-        UInt64 type = 0;
-        if(!PyArg_ParseTuple(args, "k", &type))
-            throw(Exception("Unable to parse arguments"));
-
-        GnssType current;
-        current.type = type;
-
-        return Py_BuildValue("s", current.str().c_str());
-    }
-    catch(std::exception &e)
-    {
-      PyErr_SetString(groopsError, e.what());
-      return NULL;
-    }
-}
-
 #endif
