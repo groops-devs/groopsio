@@ -106,7 +106,12 @@ Matrix fromPyObject(PyObject *pyObj, Matrix::Type t = Matrix::GENERAL,
   if(t==Matrix::GENERAL)
     M = Matrix(rows, columns);
   else
+  {
+    if(rows != columns)
+      throw(Exception("Matrix must be square."));
     M = Matrix(rows, t, uplo);
+  }
+
 
   if(size[0]*size[1] != 0)
     memcpy(M.field(), PyArray_DATA((PyArrayObject*)pyArr), M.size()*sizeof(Double));
