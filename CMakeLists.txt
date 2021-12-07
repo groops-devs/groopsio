@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.16)
 project(groopsio LANGUAGES CXX Fortran)
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(Python3 COMPONENTS Interpreter Development NumPy)
-include_directories(${Python3_INCLUDE_DIRS})
-include_directories(${Python3_NumPy_INCLUDE_DIRS})
+find_package(Python COMPONENTS Development NumPy)
+include_directories(${Python_INCLUDE_DIRS})
+include_directories(${Python_NumPy_INCLUDE_DIRS})
 
 find_package(EXPAT  REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})
@@ -21,7 +21,7 @@ else()
   message(WARNING "Z library *NOT* found (https://www.zlib.net). groopsio will not be able to read/write compressed *.gz files.")
 endif()
 
-set(BASE_LIBRARIES ${EXPAT_LIBRARIES} ${BLAS_LIBRARIES} ${LIB_Z} ${Python3_LIBRARIES} stdc++fs)
+set(BASE_LIBRARIES ${EXPAT_LIBRARIES} ${BLAS_LIBRARIES} ${LIB_Z} ${Python_LIBRARIES} stdc++fs)
 
 include(sources.list)
 set(GROOPS_SOURCE_DIR "" CACHE PATH "path to GROOPS source directory")
