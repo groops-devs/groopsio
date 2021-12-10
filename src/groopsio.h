@@ -112,7 +112,6 @@ Matrix fromPyObject(PyObject *pyObj, Matrix::Type t = Matrix::GENERAL,
     M = Matrix(rows, t, uplo);
   }
 
-
   if(size[0]*size[1] != 0)
     memcpy(M.field(), PyArray_DATA((PyArrayObject*)pyArr), M.size()*sizeof(Double));
 
@@ -209,7 +208,7 @@ static PyObject* loadgridrectangular(PyObject* /*self*/, PyObject *args)
     PyTuple_SetItem(return_tuple, dataCount + 0, fromMatrix(lons));
     PyTuple_SetItem(return_tuple, dataCount + 1, fromMatrix(lats));
     PyTuple_SetItem(return_tuple, dataCount + 2, PyFloat_FromDouble(G.ellipsoid.a()));
-    PyTuple_SetItem(return_tuple, dataCount + 3, PyFloat_FromDouble(1.0/G.ellipsoid.f()));
+    PyTuple_SetItem(return_tuple, dataCount + 3, PyFloat_FromDouble(G.ellipsoid.f()));
 
     return return_tuple;
   }
@@ -254,7 +253,7 @@ static PyObject* loadgrid(PyObject* /*self*/, PyObject *args)
     PyObject *return_tuple = PyTuple_New(3); // data, a, f
     PyTuple_SetItem(return_tuple, 0, data);
     PyTuple_SetItem(return_tuple, 1, PyFloat_FromDouble(G.ellipsoid.a()));
-    PyTuple_SetItem(return_tuple, 2, PyFloat_FromDouble(1.0/G.ellipsoid.f()));
+    PyTuple_SetItem(return_tuple, 2, PyFloat_FromDouble(G.ellipsoid.f()));
 
     return return_tuple;
   }
@@ -279,7 +278,7 @@ static PyObject* savegrid(PyObject* /*self*/, PyObject* args)
     if(!PyArg_ParseTuple(args, "sOdd", &s, &data_array, &a, &f))
       throw(Exception("Unable to parse arguments."));
 
-    Ellipsoid ell(a, 1/f);
+    Ellipsoid ell(a, f != 0.0 ? 1/f : 0.0);
     Matrix data = fromPyObject(data_array);
     const UInt pointCount = data.rows();
     const UInt valueCount = data.columns() - 4;
