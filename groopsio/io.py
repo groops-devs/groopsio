@@ -23,12 +23,14 @@ import groopsiobase as giocpp
 
 
 def loadmat(file_name):
-    warnings.warn("'loadmat' will be deprecated in favor of 'loadmatrix' in a future release", category=DeprecationWarning)
+    warnings.warn("'loadmat' will be deprecated in favor of 'loadmatrix' in a future release",
+                  category = DeprecationWarning)
     return loadmatrix(file_name)
 
 
-def savemat(file_name, M, mtype='general', uplo='upper'):
-    warnings.warn("'savemat' will be deprecated in favor of 'savematrix' in a future release", category=DeprecationWarning)
+def savemat(file_name, M, mtype = 'general', uplo = 'upper'):
+    warnings.warn("'savemat' will be deprecated in favor of 'savematrix' in a future release",
+                  category = DeprecationWarning)
     if uplo.lower() not in ('upper', 'lower'):
         raise ValueError("Matrix triangle must be 'upper' or 'lower'.")
 
@@ -69,7 +71,7 @@ def loadmatrix(file_name):
     return giocpp.loadmat(file_name)
 
 
-def savematrix(file_name, matrix, matrix_type='general', lower=False):
+def savematrix(file_name, matrix, matrix_type = 'general', lower = False):
     """
     Write Numpy ndarray to GROOPS Matrix file
 
@@ -163,7 +165,8 @@ def loadgridrectangular(file_name):
 
     return_tuple = giocpp.loadgridrectangular(file_name)
     data_count = len(return_tuple) - 4
-    return list(return_tuple[0:data_count]), return_tuple[-4].flatten(), return_tuple[-3].flatten(), return_tuple[-2], return_tuple[-1]
+    return list(return_tuple[0:data_count]), return_tuple[-4].flatten(), return_tuple[-3].flatten(), return_tuple[-2], \
+           return_tuple[-1]
 
 
 def loadgrid(file_name):
@@ -205,7 +208,7 @@ def loadgrid(file_name):
     return data, a, f
 
 
-def savegrid(file_name, data, a=6378137.0, f=298.2572221010**-1):
+def savegrid(file_name, data, a = 6378137.0, f = 298.2572221010**-1):
     """
     Write grid to GROOPS GriddedData file
 
@@ -240,7 +243,7 @@ def savegrid(file_name, data, a=6378137.0, f=298.2572221010**-1):
     giocpp.savegrid(file_name, data, a, f)
 
 
-def loadinstrument(file_name, concat_arcs=False):
+def loadinstrument(file_name, concat_arcs = False):
     """
     Read GROOPS Instrument file format.
 
@@ -327,14 +330,16 @@ def loadinstrumentgnssreceiver(file_name):
     for arc in arcs:
         is_residual_file = np.any([s.endswith('_redundancy') for s in arc.keys()])
 
-        arc["epochs"] = np.array([t0 + dt.timedelta(days=tk) for tk in arc["epochs"]])
+        arc["epochs"] = np.array([t0 + dt.timedelta(days = tk) for tk in arc["epochs"]])
         to_delete = []
         # Remove 0 values in observations
         for obs_name, values in arc.items():
-            if obs_name.endswith("_redundancy") or obs_name.endswith("_sigmaFactor") or obs_name[0] == "D" or '*' in obs_name[0:3] or obs_name == "epochs":
+            if obs_name.endswith("_redundancy") or obs_name.endswith("_sigmaFactor") or obs_name[
+                0] == "D" or '*' in obs_name[0:3] or obs_name == "epochs":
                 continue
             if np.count_nonzero(values[~np.isnan(values)]) == 0:
-                to_delete.extend([obs_name, obs_name + '_redundancy', obs_name + '_sigmaFactor'] if is_residual_file else [obs_name])
+                to_delete.extend(
+                    [obs_name, obs_name + '_redundancy', obs_name + '_sigmaFactor'] if is_residual_file else [obs_name])
 
         for obs_name in to_delete:
             arc.pop(obs_name)
@@ -371,7 +376,7 @@ def loadstarcamera(file_name):
     return times.flatten(), data
 
 
-def saveinstrument(file_name, arcs, epoch_type=None):
+def saveinstrument(file_name, arcs, epoch_type = None):
     """
     Save arcs to  GROOPS Instrument file format.
 
@@ -408,7 +413,7 @@ def saveinstrument(file_name, arcs, epoch_type=None):
     giocpp.saveinstrument(file_name, [arc for arc in arcs], epoch_type)
 
 
-def loadsphericalharmonics(file_name, return_sigmas=False):
+def loadsphericalharmonics(file_name, return_sigmas = False):
     """
     Read spherical harmonics data from file
 
@@ -442,7 +447,7 @@ def loadsphericalharmonics(file_name, return_sigmas=False):
     return giocpp.loadsphericalharmonics(file_name, return_sigmas)
 
 
-def savesphericalharmonics(file_name, anm, GM, R, sigma2anm=None):
+def savesphericalharmonics(file_name, anm, GM, R, sigma2anm = None):
     """
     Write spherical harmonics data to file
 
@@ -476,13 +481,15 @@ def savesphericalharmonics(file_name, anm, GM, R, sigma2anm=None):
 
 
 def loadgravityfield(file_name):
-    warnings.warn("'loadgravityfield' will be deprecated in favor of 'loadsphericalharmonics' in a future release", category=DeprecationWarning)
+    warnings.warn("'loadgravityfield' will be deprecated in favor of 'loadsphericalharmonics' in a future release",
+                  category = DeprecationWarning)
     anm, GM, R, sigma2anm = giocpp.loadsphericalharmonics(file_name, True)
     return GM, R, anm, sigma2anm
 
 
-def savegravityfield(file_name, GM, R, anm, sigma2anm=None):
-    warnings.warn("'savegravityfield' will be deprecated in favor of 'savesphericalharmonics' in a future release", category=DeprecationWarning)
+def savegravityfield(file_name, GM, R, anm, sigma2anm = None):
+    warnings.warn("'savegravityfield' will be deprecated in favor of 'savesphericalharmonics' in a future release",
+                  category = DeprecationWarning)
     savesphericalharmonics(file_name, anm, GM, R, sigma2anm)
 
 
@@ -525,7 +532,7 @@ def loadtimesplines(file_name, time):
     return anm, GM, R
 
 
-def loadnormalsinfo(file_name, return_full_info=False):
+def loadnormalsinfo(file_name, return_full_info = False):
     """
     Read metadata of normal equation file.
 
@@ -628,7 +635,8 @@ def savenormals(file_name, N, n, lPl, obs_count):
         raise ValueError('Number of parameters in normal equation coefficient matrix and right hand side do not match.')
 
     if lPl.size != n.shape[1]:
-        raise ValueError('Number of right hand sides in observation square sum and right hand side vector do not match.')
+        raise ValueError(
+            'Number of right hand sides in observation square sum and right hand side vector do not match.')
 
     return giocpp.savenormals(file_name, N, n, lPl, obs_count)
 
@@ -736,7 +744,7 @@ def loadfilter(file_name):
     return b, a, start_index
 
 
-def savefilter(file_name, b, a=np.ones(1), start_index=0):
+def savefilter(file_name, b, a = np.ones(1), start_index = 0):
     """
     Save filter coefficients to file.
 
@@ -828,7 +836,7 @@ def savepolygon(file_name, polygons):
     return giocpp.savepolygon(file_name, polygons)
 
 
-def loadparameternames(file_name, encoding='utf-8', errors='strict'):
+def loadparameternames(file_name, encoding = 'utf-8', errors = 'strict'):
     """
     Read a parameter name list from file.
 
@@ -856,3 +864,9 @@ def loadparameternames(file_name, encoding='utf-8', errors='strict'):
 
     return tuple(name.decode(encoding, errors) for name in giocpp.loadparameternames(file_name))
 
+
+def loadgnsssignalbias(file_name):
+    if not isfile(file_name):
+        raise FileNotFoundError("File {} does not exist".format(file_name))
+
+    return giocpp.loadgnsssignalbias(file_name)
