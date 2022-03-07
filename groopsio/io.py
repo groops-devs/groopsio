@@ -476,15 +476,13 @@ def savesphericalharmonics(file_name, anm, GM, R, sigma2anm=None):
 
 
 def loadgravityfield(file_name):
-    warnings.warn("'loadgravityfield' will be deprecated in favor of 'loadsphericalharmonics' in a future release",
-                  category = DeprecationWarning)
+    warnings.warn("'loadgravityfield' will be deprecated in favor of 'loadsphericalharmonics' in a future release", category=DeprecationWarning)
     anm, GM, R, sigma2anm = giocpp.loadsphericalharmonics(file_name, True)
     return GM, R, anm, sigma2anm
 
 
 def savegravityfield(file_name, GM, R, anm, sigma2anm = None):
-    warnings.warn("'savegravityfield' will be deprecated in favor of 'savesphericalharmonics' in a future release",
-                  category = DeprecationWarning)
+    warnings.warn("'savegravityfield' will be deprecated in favor of 'savesphericalharmonics' in a future release", category=DeprecationWarning)
     savesphericalharmonics(file_name, anm, GM, R, sigma2anm)
 
 
@@ -630,8 +628,7 @@ def savenormals(file_name, N, n, lPl, obs_count):
         raise ValueError('Number of parameters in normal equation coefficient matrix and right hand side do not match.')
 
     if lPl.size != n.shape[1]:
-        raise ValueError(
-            'Number of right hand sides in observation square sum and right hand side vector do not match.')
+        raise ValueError('Number of right hand sides in observation square sum and right hand side vector do not match.')
 
     return giocpp.savenormals(file_name, N, n, lPl, obs_count)
 
@@ -739,7 +736,7 @@ def loadfilter(file_name):
     return b, a, start_index
 
 
-def savefilter(file_name, b, a = np.ones(1), start_index=0):
+def savefilter(file_name, b, a=np.ones(1), start_index=0):
     """
     Save filter coefficients to file.
 
