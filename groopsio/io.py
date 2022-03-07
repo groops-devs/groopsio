@@ -481,7 +481,7 @@ def loadgravityfield(file_name):
     return GM, R, anm, sigma2anm
 
 
-def savegravityfield(file_name, GM, R, anm, sigma2anm = None):
+def savegravityfield(file_name, GM, R, anm, sigma2anm=None):
     warnings.warn("'savegravityfield' will be deprecated in favor of 'savesphericalharmonics' in a future release", category=DeprecationWarning)
     savesphericalharmonics(file_name, anm, GM, R, sigma2anm)
 
