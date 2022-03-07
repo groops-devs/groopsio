@@ -941,6 +941,9 @@ static PyObject* loadparameternames(PyObject* /*self*/, PyObject* args)
   }
 }
 
+/*
+ * Read groops signalbias file
+ */
 static PyObject* loadgnsssignalbias(PyObject*, PyObject *args)
 {
   try
@@ -956,7 +959,7 @@ static PyObject* loadgnsssignalbias(PyObject*, PyObject *args)
     {
       PyObject* current_tuple = PyTuple_New(2);
       PyTuple_SetItem(current_tuple, 0, Py_BuildValue("s", biases.types.at(i).str().c_str()));
-      PyTuple_SetItem(current_tuple, 1,  Py_BuildValue("d", biases.biases.at(i)));
+      PyTuple_SetItem(current_tuple, 1, Py_BuildValue("d", biases.biases.at(i)));
 
       PyTuple_SetItem(return_tuple, i, current_tuple);
     }
