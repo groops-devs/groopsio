@@ -499,7 +499,7 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
     InstrumentFile file_receiver(fname);
 
     PyObject* return_tuple = PyTuple_New(file_receiver.arcCount());
-    std::string epoch_str = "epochs";
+    const std::string epoch_str = "epochs";
     const std::vector<std::string> repetiton_obs_name_additions = {"_redundancy","_sigmaFactor"};
     for(UInt arcNo = 0; arcNo < file_receiver.arcCount(); arcNo++)
     {
@@ -509,66 +509,114 @@ static PyObject* loadinstrumentgnssreceiver(PyObject *, PyObject* args)
         throw(Exception("could not create dictionary"));
 
       MiscValuesArc arc_new;
-      UInt epochs = arc.size();
+      auto firstEpoch = arc.front().time;
+      auto lastEpoch = arc.back().time;
+      Vector deltat(arc.size());
+      for(UInt i = 0; i < arc.size() - 1; i++)
+      {
+        deltat(i) = (arc.at(i+1).time.mjd() - arc.at(i).time.mjd()) * 24 * 3600;
+      }
+      const Double dt = median(deltat);
       UInt current_epoch = 0;
+      const UInt samples = static_cast<UInt>(std::round(((lastEpoch.mjd() - firstEpoch.mjd()) * 24 * 3600) / dt)) + 1;
+
+      // Create an array of zeros and inser them into the dict with the key ["epochs"]
+      // works a intendet
       npy_intp dims[0];
-      dims[0] = epochs;
+      dims[0] = samples;
       PyObject *times =  PyArray_ZEROS(1, dims, NPY_DOUBLE, 1);
       if(!times)
         throw(Exception("could not create array"));
-      PyDict_SetItemString(arc_dict, epoch_str.c_str() , times);
 
+
+      PyDict_SetItemString(arc_dict, epoch_str.c_str() , times);
       for(auto& epoch : arc)
       {
+        // GET current epoch and the idx in the 1d array and change the value in the dict
+        // is effectively arc_dict["epochs"][idx] = VALUE
         Double mjd = epoch.time.mjd();
         PyArrayObject *m = (PyArrayObject*)PyDict_GetItemString(arc_dict, epoch_str.c_str());
-        *(static_cast<Double*>(PyArray_GETPTR1(m, current_epoch))) = mjd;
-
+        const Int idx = static_cast<Int>(std::round((mjd - firstEpoch.mjd()) * 24 * 3600 / dt));
+        *(static_cast<Double*>(PyArray_GETPTR1(m, idx))) = mjd;
         UInt idObs = 0;
+        // go over all satellites in this epoch
         for(GnssType typeSat : epoch.satellite)
         {
-          std::string sys = typeSat.str();
+          // searach int he residualfile list of obstype when the satellitesystem starts
+          // example ***E10 would be distance = 8 for:
+          // A1*G** 0
+          // E1*G** 1
+          // A2*G** 2
+          // E2*G** 3
+          // I**G** 4
+          // I**G** 5
+          // I**G** 6
+          // C1CG** 7
+          // A1*E** 8
           UInt idType = std::distance(epoch.obsType.begin(), std::find(epoch.obsType.begin(), epoch.obsType.end(), typeSat));
+
+          // vector with types that have been used already. Is used to check if same named values as used for redundancy and
+          // sigmafactor
           std::vector<std::string> used_types;
+
+          // id obs is initialized for every epoch with 0 -> is the index for the value
+          // idType is initialized for every satellite -> is the index for the obsType
+          // while current idType is still valid for the current satellite and idObs within the vector of values
           while((idType<epoch.obsType.size()) && (idObs<epoch.observation.size()) && (epoch.obsType.at(idType) == typeSat))
           {
-            std::string str_type = epoch.obsType.at(idType++).str().substr(0,3);
-            str_type += sys.substr(3);
-            std::string str_type_tmp = str_type;
-            Double value = epoch.observation.at(idObs++);
-            UInt repetition = 0;
-            while(std::find(used_types.begin(), used_types.end(), str_type) != used_types.end())
-            {
-              if(repetition < repetiton_obs_name_additions.size())
-              {
-                str_type = str_type_tmp + repetiton_obs_name_additions.at(repetition);
-              }
-              else
-              {
-                str_type += "x";
-              }
-              repetition++;
-            }
+             // create obs and satellite combined gnsstype and iterate idType to next obsType e.g. L1CG10
+             GnssType obs = epoch.obsType.at(idType++);
+             GnssType full = obs + typeSat;
+             std::string str_type = full.str();
+             std::string str_type_tmp = str_type;
+             // get current value for the fulltype and iteratoe idobs to next observation value
+             Double value = epoch.observation.at(idObs++);
 
-            used_types.push_back(str_type);
-            if (!PyDict_GetItemString(arc_dict, str_type.c_str()))
-            {
-              PyObject* vals = PyArray_ZEROS(1, dims, NPY_DOUBLE, 1);
-              PyDict_SetItemString(arc_dict, str_type.c_str() ,vals);
-              PyArrayObject *val_ar_temp = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
+             // If the current fullType is within the used types append something to the name string
+             // If L1CG10 already in usedTypes will append _redundancy to it leading to -> L1CG10_redundancy
+             // if L1CG10_redundancy already in usedTypes will append _sigmaFactor to the name string .> L1CG10_sigmaFactor
+             // if L1CG10_sigmaFactor in usedTypes will append "X" to the name until no longer in used types
+             UInt repetition = 0;
+             while(std::find(used_types.begin(), used_types.end(), str_type) != used_types.end())
+             {
+               if(repetition < repetiton_obs_name_additions.size())
+               {
+                 str_type = str_type_tmp + repetiton_obs_name_additions.at(repetition);
+               }
+               else
+               {
+                 str_type += "x";
+               }
+               repetition++;
+             }
 
-              for(UInt i = 0 ; i < epochs; ++i)
-                *(static_cast<Double*>(PyArray_GETPTR1(val_ar_temp, i)))  = NAN_EXPR;
+
+             used_types.push_back(str_type);
+             // if the current full type string is not in the created dict add it to the dict with an array of zeros
+             // with the same length as epoch
+             if (!PyDict_GetItemString(arc_dict, str_type.c_str()))
+             {
+                // create and add zero array for the given full type
+               PyObject* zVals = PyArray_ZEROS(1, dims, NPY_DOUBLE, 1);
+               Int errorCode = PyDict_SetItemString(arc_dict, str_type.c_str(), zVals);
+               if( errorCode == -1)
+                 std::cout << "Error while emplacing: " << str_type.c_str() << " epoch idx: "  << idx << std::endl;
+
+               PyArrayObject* val_ar_temp = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
+               if(val_ar_temp == NULL)
+                 std::cout << "Could not find: " << str_type << " epoch idx: "  << idx << std::endl;
+
+               for(UInt i = 0 ; i < samples; ++i)
+                 *(static_cast<Double*>(PyArray_GETPTR1(val_ar_temp, i)))  = NAN_EXPR;
+
             }
-            PyArrayObject *val_ar = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
-            *(static_cast<Double*>(PyArray_GETPTR1(val_ar, current_epoch))) = value;
+            PyArrayObject *arPointer = (PyArrayObject*)PyDict_GetItemString(arc_dict, str_type.c_str());
+            *(static_cast<Double*>(PyArray_GETPTR1(arPointer, idx))) = value;
           }
         }
-        current_epoch++;
       }
       PyTuple_SetItem(return_tuple, arcNo, arc_dict);
     }
-
     return return_tuple;
   }
   catch(std::exception& e)
@@ -887,6 +935,37 @@ static PyObject* loadparameternames(PyObject* /*self*/, PyObject* args)
     return parameterNameTuple;
   }
   catch(std::exception& e)
+  {
+    PyErr_SetString(groopsError, e.what());
+    return NULL;
+  }
+}
+
+/*
+ * Read groops signalbias file
+ */
+static PyObject* loadgnsssignalbias(PyObject*, PyObject *args)
+{
+  try
+  {
+    const char *s;
+    if(!PyArg_ParseTuple(args, "s", &s))
+      throw(Exception("Unable to parse arguments"));
+    std::string fname(s);
+    GnssSignalBias biases;
+    readFileGnssSignalBias(fname, biases);
+    PyObject* return_tuple = PyTuple_New(biases.biases.size());
+    for(UInt i = 0; i < biases.biases.size(); i++)
+    {
+      PyObject* current_tuple = PyTuple_New(2);
+      PyTuple_SetItem(current_tuple, 0, Py_BuildValue("s", biases.types.at(i).str().c_str()));
+      PyTuple_SetItem(current_tuple, 1, Py_BuildValue("d", biases.biases.at(i)));
+
+      PyTuple_SetItem(return_tuple, i, current_tuple);
+    }
+    return return_tuple;
+  }
+  catch(std::exception &e)
   {
     PyErr_SetString(groopsError, e.what());
     return NULL;
