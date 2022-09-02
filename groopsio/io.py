@@ -1,6 +1,6 @@
 # groopsio - Python wrappers for GROOPS file in-/output.
 #
-# Copyright (C) 2020 - 2021 GROOPS Developers
+# Copyright (C) 2020 - 2022 GROOPS Developers
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
