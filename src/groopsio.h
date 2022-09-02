@@ -440,6 +440,53 @@ static PyObject* loadtimesplines(PyObject* /*self*/, PyObject* args)
 }
 
 /*
+ * Load spherical harmonic coefficients from a TimeSplines file
+ */
+static PyObject* savetimesplines(PyObject* /*self*/, PyObject* args)
+{
+  try
+  {
+    const char *s;
+    Double GM = 0.0;
+    Double R = 0.0;
+    UInt splineDegree = 0;
+    PyObject *list, *mjd;
+    if(!PyArg_ParseTuple(args, "sOOddI", &s, &mjd, &list, &GM, &R, &splineDegree))
+      throw(Exception("Unable to parse arguments."));
+    std::string fname(s);
+
+    Vector mjdArray = fromPyObject(mjd);
+    std::vector<Time> times(mjdArray.rows());
+    for(UInt k = 0; k < times.size(); k++)
+      times[k] = mjd2time(mjdArray(k));
+
+    UInt dataCount = PyList_Size(list);
+    std::vector<Matrix> cnm, snm;
+    for(UInt k = 0; k < dataCount; k++)
+    {
+      Matrix _cnm = fromPyObject(PyList_GetItem(list, k));
+      const UInt maxDegree = _cnm.rows()-1;
+      Matrix _snm(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
+      copy(_cnm.slice(0, 1, maxDegree, maxDegree).trans(), _snm.slice(1, 1, maxDegree, maxDegree));
+      zeroUnusedTriangle(_snm);
+      _cnm.setType(Matrix::TRIANGULAR, Matrix::LOWER);
+      zeroUnusedTriangle(_cnm);
+      cnm.push_back(_cnm);
+      snm.push_back(_snm);
+    }
+
+    writeFileTimeSplinesGravityfield(FileName(fname), GM, R, splineDegree, times, cnm, snm);
+
+    Py_RETURN_NONE;
+  }
+  catch(std::exception& e)
+  {
+    PyErr_SetString(groopsError, e.what());
+    return NULL;
+  }
+}
+
+/*
  * Load arcs from instrument files
  */
 static PyObject* loadinstrument(PyObject* /*self*/, PyObject* args)

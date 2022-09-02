@@ -525,6 +525,31 @@ def loadtimesplines(file_name, time):
     return anm, GM, R
 
 
+def savetimesplines(file_name, times, anm_list, GM, R, spline_degree):
+    """
+    Save a list of potential coefficients as TimeSplines file.
+
+    Parameters
+    ----------
+    file_name : str
+        file name of time splines file
+    times : list of float or datetime
+        nodal points of spline time series either in MJD or datetime objects
+    anm_list : list of ndarrays
+        list of potential coefficients arrays
+    GM : float
+        Geocentric gravitational constant
+    R : float
+        Reference radius
+    spline_degree : int
+        spline degree
+    """
+    if isinstance(times[0], dt.datetime):
+        times = np.asarray([(e - dt.datetime(1858, 11, 17)).total_seconds() / 86400.0 for e in times])
+
+    giocpp.savetimesplines(file_name, np.asarray(times, anm_list, GM, R, spline_degree))
+
+
 def loadnormalsinfo(file_name, return_full_info=False):
     """
     Read metadata of normal equation file.

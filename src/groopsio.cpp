@@ -31,6 +31,7 @@ extern "C" {
     {"savesphericalharmonics", (PyCFunction)savesphericalharmonics, METH_VARARGS, ""},
 
     {"loadtimesplines", (PyCFunction)loadtimesplines, METH_VARARGS, ""},
+    {"savetimesplines", (PyCFunction)savetimesplines, METH_VARARGS, ""},
 
     {"loadarclist", (PyCFunction)loadarclist, METH_VARARGS, ""},
 
