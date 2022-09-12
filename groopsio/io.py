@@ -240,6 +240,83 @@ def savegrid(file_name, data, a=6378137.0, f=298.2572221010**-1):
     giocpp.savegrid(file_name, data, a, f)
 
 
+def loadgridtimeseries(file_name, time, return_grid=False):
+    """
+    Read (meta) data from a GROOPS GriddedDataTimeSeries file.
+
+    Parameters
+    ----------
+    file_name : str
+        file name
+    time : float or datetime.datetime
+        evaluation time of the GriddedDataTimeSeries file as MJD (float) or datetime object
+    return_grid : bool
+        return only the grid point coordinates in the file (default: False)
+
+    Returns
+    -------
+    If return_grid is True:
+        grid_array : array_like(m, 4)
+            2d ndarray containing the grid coordinates and values. Columns 0-3 contain geometry (lon, lat, h, area)
+        a : float
+            semi-major axis of ellipsoid
+        f : float
+            flattening of ellipsoid
+    else:
+        data : array_like(m, k)
+            gridded data values at given time stamp
+
+    Raises
+    ------
+    FileNotFoundError
+        if file is nonexistent
+
+    """
+    if not isfile(file_name):
+        raise FileNotFoundError('File ' + file_name + ' does not exist.')
+
+    if isinstance(time, dt.datetime):
+        delta = time - dt.datetime(1858, 11, 17)
+        time = delta.days + delta.seconds / 86400.0
+
+    return giocpp.loadgridtimeseries(file_name, time, return_grid)
+
+
+def savegridtimeseries(file_name, grid_array, times, data, spline_degree, a=6378137.0, f=298.2572221010**-1):
+    """
+    Save data to a GROOPS GriddedDataTimeSeries file.
+
+    Parameters
+    ----------
+    file_name : str
+        file name
+    grid_array : array_like(m, 4)
+        2d ndarray containing the grid coordinates and values. Columns 0-3 contain geometry (lon, lat, h, area)
+    times : list of float or datetime.datetime
+        evaluation time of the GriddedDataTimeSeries file as MJD (float) or datetime object
+    data : list of ndarrays
+        values corresponding to the given time stamps
+    spline_degree : int
+        degree of the basis splines as which the time/data values should be stored
+    a : float
+        semi-major axis of ellipsoid
+    f : float
+
+    Raises
+    ------
+    FileNotFoundError
+        if directory is nonexistent or not writeable
+
+    """
+    if split(file_name)[0] and not isdir(split(file_name)[0]):
+        raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
+
+    if isinstance(times[0], dt.datetime):
+        times = np.asarray([(e - dt.datetime(1858, 11, 17)).total_seconds() / 86400.0 for e in times])
+
+    giocpp.savegridtimeseries(file_name, grid_array, np.asarray(times), data, a, f, spline_degree)
+
+
 def loadinstrument(file_name, concat_arcs=False):
     """
     Read GROOPS Instrument file format.

@@ -33,6 +33,9 @@ extern "C" {
     {"loadtimesplines", (PyCFunction)loadtimesplines, METH_VARARGS, ""},
     {"savetimesplines", (PyCFunction)savetimesplines, METH_VARARGS, ""},
 
+    {"loadgridtimeseries", (PyCFunction)loadgridtimeseries, METH_VARARGS, ""},
+    {"savegridtimeseries", (PyCFunction)savegridtimeseries, METH_VARARGS, ""},
+
     {"loadarclist", (PyCFunction)loadarclist, METH_VARARGS, ""},
 
     {"loadinstrument", (PyCFunction)loadinstrument, METH_VARARGS, ""},

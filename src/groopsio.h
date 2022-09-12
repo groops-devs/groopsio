@@ -307,6 +307,114 @@ static PyObject* savegrid(PyObject* /*self*/, PyObject* args)
 }
 
 /*
+ * Read GROOPS grid time series from file
+ */
+static PyObject* loadgridtimeseries(PyObject* /*self*/, PyObject *args)
+{
+  try
+  {
+    Double mjd = 0.0;
+    const char *s;
+    PyObject *returnGrid;
+    if(!PyArg_ParseTuple(args, "sdO", &s, &mjd, &returnGrid))
+      throw(Exception("Unable to parse arguments."));
+    std::string fname(s);
+
+    InFileGriddedDataTimeSeries fileTimeSeries;
+    fileTimeSeries.open(FileName(fname));
+    Time t = mjd2time(mjd);
+
+    if(PyObject_IsTrue(returnGrid))
+    {
+      GriddedData G = fileTimeSeries.grid();
+      PyObject* data = createDoubleArray(G.points.size(), 4); // lon, lat, h, area
+      {
+        Angle L, B;
+        Double h;
+
+        for(UInt k=0; k<G.points.size(); k++)
+        {
+          G.ellipsoid(G.points.at(k), L, B, h);
+          *(static_cast<Double*>(PyArray_GETPTR2((PyArrayObject*)data, k, 0))) = static_cast<Double>(L);
+          *(static_cast<Double*>(PyArray_GETPTR2((PyArrayObject*)data, k, 1))) = static_cast<Double>(B);
+          *(static_cast<Double*>(PyArray_GETPTR2((PyArrayObject*)data, k, 2))) = h;
+          if(G.areas.size() == G.points.size()) *(static_cast<Double*>(PyArray_GETPTR2((PyArrayObject*)data, k, 3))) = G.areas.at(k);
+          for(UInt l = 0; l<G.values.size(); l++)
+            *(static_cast<Double*>(PyArray_GETPTR2((PyArrayObject*)data, k, 4+l))) = G.values.at(l).at(k);
+        }
+      }
+      PyObject *return_tuple = PyTuple_New(3); // data, a, f
+      PyTuple_SetItem(return_tuple, 0, data);
+      PyTuple_SetItem(return_tuple, 1, PyFloat_FromDouble(G.ellipsoid.a()));
+      PyTuple_SetItem(return_tuple, 2, PyFloat_FromDouble(G.ellipsoid.f()));
+      return return_tuple;
+    }
+    else
+    {
+      Matrix data = fileTimeSeries.data(mjd2time(mjd));
+      PyObject* pyObj = fromMatrix(data);
+      return pyObj;
+    }
+  }
+  catch(std::exception& e)
+  {
+    PyErr_SetString(groopsError, e.what());
+    return NULL;
+  }
+}
+
+/*
+ * Save a GROOPS grid time series.
+ */
+static PyObject* savegridtimeseries(PyObject* /*self*/, PyObject* args)
+{
+  try
+  {
+    const char *s;
+    UInt splineDegree = 0;
+    PyObject *list, *mjd, *grid_array;
+    Double a = 0.0;
+    Double f = 0.0;
+    if(!PyArg_ParseTuple(args, "sOOOddI", &s, &grid_array, &mjd, &list, &a, &f, &splineDegree))
+      throw(Exception("Unable to parse arguments."));
+    std::string fname(s);
+
+    Vector mjdArray = fromPyObject(mjd);
+    std::vector<Time> times(mjdArray.rows());
+    for(UInt k = 0; k < times.size(); k++)
+      times[k] = mjd2time(mjdArray(k));
+
+    GriddedData grid;
+    Ellipsoid ell(a, f != 0.0 ? 1/f : 0.0);
+    Matrix gridData = fromPyObject(grid_array);
+    const UInt pointCount = gridData.rows();
+
+    grid.points.reserve(pointCount);
+    grid.areas.reserve(pointCount);
+    std::vector<Double> _area(pointCount);
+    for(UInt k = 0; k<pointCount; k++)
+    {
+      grid.points.push_back(ell(Angle(gridData(k, 0)), Angle(gridData(k, 1)), Angle(gridData(k, 2))));
+      grid.areas.push_back(gridData(k, 3));
+    }
+
+    UInt dataCount = PyList_Size(list);
+    std::vector<Matrix> data;
+    for(UInt k = 0; k < dataCount; k++)
+      data.push_back(fromPyObject(PyList_GetItem(list, k)));
+
+    writeFileGriddedDataTimeSeries(FileName(fname), splineDegree, times, grid, data);
+
+    Py_RETURN_NONE;
+  }
+  catch(std::exception& e)
+  {
+    PyErr_SetString(groopsError, e.what());
+    return NULL;
+  }
+}
+
+/*
  * Load spherical harmonic coefficients from GROOPS file
  */
 static PyObject* loadsphericalharmonics(PyObject* /*self*/, PyObject* args)
