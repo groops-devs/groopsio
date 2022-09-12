@@ -621,6 +621,9 @@ def savetimesplines(file_name, times, anm_list, GM, R, spline_degree):
     spline_degree : int
         spline degree
     """
+    if split(file_name)[0] and not isdir(split(file_name)[0]):
+        raise FileNotFoundError('Directory ' + split(file_name)[0] + ' does not exist.')
+
     if isinstance(times[0], dt.datetime):
         times = np.asarray([(e - dt.datetime(1858, 11, 17)).total_seconds() / 86400.0 for e in times])
 
