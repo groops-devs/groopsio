@@ -22,6 +22,7 @@ inputOutput/fileArchive.cpp
 inputOutput/fileName.cpp
 inputOutput/system.cpp
 inputOutput/logging.cpp
+files/filePlatform.cpp
 files/fileAdmittance.cpp
 files/fileArcList.cpp
 files/fileDoodsonEarthOrientationParameter.cpp

@@ -27,6 +27,7 @@
 #include "inputOutput/file.h"
 #include "parallel/parallel.h"
 
+#include "files/filePlatform.h"
 #include "files/fileAdmittance.h"
 #include "files/fileArcList.h"
 #include "files/fileDoodsonEarthOrientationParameter.h"
