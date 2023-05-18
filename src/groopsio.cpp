@@ -1,7 +1,7 @@
 /*
  * Python module for GROOPS file I/O.
  *
- * Copyright (C) 2020 - 2021 GROOPS Developers
+ * Copyright (C) 2020 - 2023 GROOPS Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,10 @@ extern "C" {
     {"savesphericalharmonics", (PyCFunction)savesphericalharmonics, METH_VARARGS, ""},
 
     {"loadtimesplines", (PyCFunction)loadtimesplines, METH_VARARGS, ""},
+    {"savetimesplines", (PyCFunction)savetimesplines, METH_VARARGS, ""},
+
+    {"loadgridtimeseries", (PyCFunction)loadgridtimeseries, METH_VARARGS, ""},
+    {"savegridtimeseries", (PyCFunction)savegridtimeseries, METH_VARARGS, ""},
 
     {"loadarclist", (PyCFunction)loadarclist, METH_VARARGS, ""},
 
