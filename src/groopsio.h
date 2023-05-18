@@ -1,7 +1,7 @@
 /*
  * Python module for GROOPS file I/O.
  *
- * Copyright (C) 2020 - 2022 GROOPS Developers
+ * Copyright (C) 2020 - 2023 GROOPS Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
