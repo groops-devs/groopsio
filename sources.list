@@ -22,6 +22,7 @@ inputOutput/fileArchive.cpp
 inputOutput/fileName.cpp
 inputOutput/system.cpp
 inputOutput/logging.cpp
+inputOutput/archiveJson.cpp
 files/filePlatform.cpp
 files/fileAdmittance.cpp
 files/fileArcList.cpp
@@ -33,7 +34,6 @@ files/fileEphemerides.cpp
 files/fileGnssAntennaDefinition.cpp
 files/fileGnssReceiverDefinition.cpp
 files/fileGnssSignalBias.cpp
-files/fileGnssStationInfo.cpp
 files/fileGriddedData.cpp
 files/fileGriddedDataTimeSeries.cpp
 files/fileInstrument.cpp
@@ -63,5 +63,4 @@ parallel/parallelSingle.cpp
 parallel/matrixDistributed.cpp
 external/lapack/blasWrapper.f
 external/lapack/lapackWrapper.f
-external/igrf/igrf13.f
 )

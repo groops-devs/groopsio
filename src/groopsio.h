@@ -17,11 +17,11 @@
 #ifndef __GROOPSIO__
 #define __GROOPSIO__
 
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_2_0_API_VERSION
 
 #include <Python.h>
-#include "numpy/ndarraytypes.h"
-#include "numpy/npy_3kcompat.h"
+#include "numpy/arrayobject.h"
+
 
 #include "base/matrix.h"
 #include "inputOutput/file.h"
@@ -38,7 +38,6 @@
 #include "files/fileGnssAntennaDefinition.h"
 #include "files/fileGnssReceiverDefinition.h"
 #include "files/fileGnssSignalBias.h"
-#include "files/fileGnssStationInfo.h"
 #include "files/fileGriddedData.h"
 #include "files/fileGriddedDataTimeSeries.h"
 #include "files/fileInstrument.h"
@@ -929,7 +928,7 @@ static PyObject* loadparameternames(PyObject* /*self*/, PyObject* args)
     for(UInt k = 0; k < parameterNames.size(); k++)
     {
       PyObject *str;
-      str = PyString_FromStringAndSize(parameterNames.at(k).str().c_str(), parameterNames.at(k).str().size());
+      str = PyBytes_FromStringAndSize(parameterNames.at(k).str().c_str(), parameterNames.at(k).str().size());
       PyTuple_SetItem(parameterNameTuple, k, str);
     }
 

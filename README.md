@@ -11,10 +11,17 @@ It is written as a C/C++ extension to NumPy and requires a few GROOPS  source fi
 Installation
 ------------
 
-The recommended way to install groopsio is in a conda environment:
+The way to install groopsio is in a conda environment:
 
     conda create -n groopsio_env
     conda activate groopsio_env
+
+or **recommended**:
+
+    python3 -m venv groopsio_env
+    cd groopsio_env/
+    source bin/activate
+
 
 To install the current development version of the package, first clone the repository or download the zip archive.
 Depending on your platform run
@@ -28,10 +35,10 @@ Depending on your platform run
         set GROOPS_SOURCE_DIR=/path/to/groops/source 
         pip install .
 
-* Windows PowerShell
+  * Windows PowerShell
 
-        $env:GROOPS_SOURCE_DIR = '/path/to/groops/source '
-        pip install .
+          $env:GROOPS_SOURCE_DIR = '/path/to/groops/source '
+          pip install .        GROOPS_SOURCE_DIR=/path/to/groops/source pip install .
 
 in the root directory of the package (i.e. the directory containing the ``setup.py`` file). 
 The environment variable ``GROOPS_SOURCE_DIR`` should point to the `source`
